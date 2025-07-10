@@ -1,0 +1,12 @@
+node_modules
+.env.local
+.env.development
+.env.test
+.git
+*.log
+npm-debug.log*
+yarn-error.log*
+Dockerfile*
+docker-compose.yml
+.env
+.env.example

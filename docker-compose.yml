@@ -1,0 +1,32 @@
+services:
+  mongo:
+    container_name: hotel-aggregator-mongo
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+
+  backend:
+    container_name: hotel-aggregator-backend
+    build: ./backend
+    ports:
+      - "${HTTP_PORT}:${HTTP_PORT}"
+    environment:
+      HTTP_PORT: ${HTTP_PORT}
+      MONGO_URL: ${MONGO_URL}
+      SESSION_SECRET: ${SESSION_SECRET}
+    depends_on:
+      - mongo
+
+  frontend:
+    container_name: hotel-aggregator-frontend
+    build: ./frontend
+    ports:
+      - "3001:3001"
+    environment:
+      VITE_API_URL: http://localhost:3000
+      VITE_WS_URL: ws://localhost:3001
+    depends_on:
+      - backend
