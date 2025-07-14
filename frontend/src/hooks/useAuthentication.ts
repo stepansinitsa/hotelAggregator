@@ -1,7 +1,7 @@
-import { useAppSelector } from "../store/store-hooks";
+import { useAppSelector } from "../store/store-hooks"
 
-export const useAuthentication = (): boolean => {
-  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
+export const useAuth = (): boolean => {
+  const isAuth = useAppSelector(state => state.user.isAuth);
 
-  return isAuthenticated;
-};
+  return isAuth;
+}

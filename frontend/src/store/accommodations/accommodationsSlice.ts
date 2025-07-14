@@ -1,41 +1,41 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { LodgingAccomodationData } from '../../types/types.d';
 
-interface AccommodationsState {
-  loading: boolean;
-  offset: number;
-  limit: number;
-  name: string;
-  list: AccommodationDetails[];
+interface RoomsState {
+  offset: number,
+  limit: number,
+  titleSearch: string,
+  loading: boolean,
+  list: LodgingAccomodationData[],
+  currentRoom: LodgingAccomodationData,
 }
 
-const initialState: AccommodationsState = {
-  loading: false,
+const initialState: RoomsState = {
   offset: 0,
-  limit: 5,
-  name: "",
+  limit: 3,
+  titleSearch: '',
+  loading: false,
   list: [],
-};
+  currentRoom: {
+    _id: '',
+    hotel: '',
+    title: '',
+    description: '',
+    images: [],
+    isEnabled: true,
+  },
+}
 
-const accommodationsSlice = createSlice({
-  name: "accommodations",
+const roomsSlice = createSlice({
+  name: 'rooms',
   initialState,
   reducers: {
-    fetchAccommodations: (
-      state,
-      action: PayloadAction<Partial<AccommodationsState>>
-    ) => {
-      return { ...state, ...action.payload };
+    setRoomsState: (state, action: PayloadAction<Partial<RoomsState>>) => {
+      Object.assign(state, action.payload);
     },
-    updateAccommodationsState: (
-      state,
-      action: PayloadAction<Partial<AccommodationsState>>
-    ) => {
-      return { ...state, ...action.payload };
-    },
-  },
-});
+  }
+})
 
-export const { fetchAccommodations, updateAccommodationsState } =
-  accommodationsSlice.actions;
+export const { setRoomsState } = roomsSlice.actions
 
-export default accommodationsSlice.reducer;
+export default roomsSlice.reducer

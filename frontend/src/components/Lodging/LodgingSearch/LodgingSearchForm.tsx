@@ -1,31 +1,30 @@
 import { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useAppDispatch } from "../../../store/store-hooks";
-import { searchLodging } from "../../../store/lodging/lodgingSlice";
+import { setHotelsState } from "../../../store/lodgings/lodgingSlice";
 
-const LodgingSearchForm = () => {
-  const [title, setTitle] = useState<string>("");
+function HotelsSearchForm() {
+  const [title, setTitle] = useState<string>('');
   const dispatch = useAppDispatch();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(searchLodging({ title }));
-  };
+  const searchHandler = async (e: React.FormEvent<HTMLFormElement>) => {
+    try {
+      e.preventDefault();
+
+      dispatch(setHotelsState({ offset: 0, titleSearch: title }));
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   return (
-    <Form onSubmit={handleSearch} className="mb-3">
-      <Form.Control
-        type="text"
-        placeholder="Название гостиницы"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="mb-3"
-      />
+    <Form className="mb-3" onSubmit={searchHandler}>
+      <Form.Control type="text" className="mb-3" placeholder="Название отеля" onChange={(e) => setTitle(e.target.value)} />
       <Button variant="primary" type="submit">
-        Найти
+        Поиск
       </Button>
     </Form>
-  );
-};
+  )
+}
 
-export default LodgingSearchForm;
+export default HotelsSearchForm

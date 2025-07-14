@@ -1,40 +1,59 @@
-import { Button, Col, Container, Row } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import { useAppSelector } from "../../../store/store-hooks";
-import { Lodging } from "../../../types/types.d";
-import LodgingImages from "./LodgingImages";
+import { Container, Pagination } from "react-bootstrap";
+import { useAppDispatch, useAppSelector } from "../../../store/store-hooks";
+import { setHotelsState } from "../../../store/lodgings/lodgingSlice";
+import { LodgingData } from "../../../types/types.d";
+import HotelsListItem from "./LodgingListPage";
 
-interface LodgingCardProps {
-  lodging: Lodging;
-  showBtn: boolean;
+interface propData {
+  list: LodgingData[],
 }
 
-const LodgingCard = ({ lodging, showBtn }: LodgingCardProps) => {
-  const role = useAppSelector((state) => state.user.role);
+function HotelsListItems(data: propData) {
+  const hotelsState = useAppSelector(state => state.hotels);
+  const dispatch = useAppDispatch();
+  const { list } = data;
 
+  const handleNextPage = async (data: string) => {
+    try {
+      if (data === 'plus') {
+        dispatch(setHotelsState({ offset: hotelsState.offset + hotelsState.limit }));
+      } else if (data === 'minus') {
+        dispatch(setHotelsState({ offset: hotelsState.offset - hotelsState.limit }));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  
   return (
-    <Container className="bg-white rounded shadow-sm p-3 mb-4">
-      <Row className="mt-2">
-        <Col md={5}>
-          <LodgingImages images={lodging.images} />
-        </Col>
-        <Col md={7}>
-          <h4 className="fs-5 text-uppercase">{lodging.name}</h4>
-          <p className="text-muted">{lodging.description}</p>
-          {showBtn && (
-            <Link to={`/lodging?id=${lodging._id}`} className="text-decoration-none">
-              <Button variant="primary">Подробнее</Button>
-            </Link>
+    <>
+      {list.length === 0 ? (
+        <Container className="p-2 d-flex justify-content-center">
+          <span>Нет данных!</span>
+        </Container>
+      ) : (
+        <>
+          {list.map(elem =>
+            <HotelsListItem key={elem._id} hotel={elem} showBtn={true} />
           )}
-          {role === "admin" && (
-            <Link to={`/edit-lodging?id=${lodging._id}`} className="ms-2">
-              <Button variant="warning">Редактировать</Button>
-            </Link>
-          )}
-        </Col>
-      </Row>
-    </Container>
-  );
-};
+          <Pagination className="mt-3">
+            {hotelsState.offset > 0 && 
+              <Pagination.Item onClick={() => handleNextPage('minus')}>
+                Назад
+              </Pagination.Item>
+            }
+            {hotelsState.list.length >= hotelsState.limit && 
+              <Pagination.Item onClick={() => handleNextPage('plus')}>
+                Дальше
+              </Pagination.Item>
+            }
+          </Pagination>
+        </>
+        
+      )}
+      
+    </>
+  )
+}
 
-export default LodgingCard;
+export default HotelsListItems

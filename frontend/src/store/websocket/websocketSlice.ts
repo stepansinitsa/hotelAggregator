@@ -1,23 +1,23 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface WebsocketState {
+interface SocketIOState {
   isConnected: boolean;
 }
 
-const initialState: WebsocketState = {
+const initialState: SocketIOState = {
   isConnected: false,
-};
+}
 
-const websocketSlice = createSlice({
-  name: "websocket",
+const socketSlice = createSlice({
+  name: 'socketIO',
   initialState,
   reducers: {
-    connectToWebsocket: (state, action: PayloadAction<{ isConnected: boolean }>) => {
-      state.isConnected = action.payload.isConnected;
+    setConnectedStatus: (state, action: PayloadAction<{ isConnected: boolean }>) => {
+      Object.assign(state, action.payload);
     },
-  },
-});
+  }
+})
 
-export const { connectToWebsocket } = websocketSlice.actions;
+export const { setConnectedStatus } = socketSlice.actions
 
-export default websocketSlice.reducer;
+export default socketSlice.reducer

@@ -2,26 +2,26 @@ import iziToast from "izitoast";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../store/store-hooks";
-import { logout } from "../../store/user/accountSlice";
+import { logout } from "../../store/user/userSlice";
 
-const LogoutButton = () => {
+function ButtonLogout() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     dispatch(logout());
-    iziToast.info({
-      message: "Вы вышли из аккаунта",
-      position: "bottomCenter",
+    iziToast.success({
+      message: 'Успешный выход из системы',
+      position: 'bottomCenter',
     });
-    navigate("/");
-  };
+    navigate('/');
+  }
 
   return (
-    <Button variant="outline-danger" onClick={handleLogout}>
-      Выйти из системы
+    <Button variant="danger" onClick={handleLogout}>
+      Выйти
     </Button>
-  );
-};
+  )
+}
 
-export default LogoutButton;
+export default ButtonLogout

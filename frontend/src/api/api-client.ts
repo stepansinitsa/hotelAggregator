@@ -1,90 +1,121 @@
-import { apiRequest } from "./api-request";
+import fetchData from './api-request';
 import {
-  RegisterUserDto,
-  SearchLodgingParams,
-  SearchAccommodationParams,
-  UpdateUserRoleDto,
-  CreateBookingDto,
-  CreateSupportTicketDto,
-  FetchChatListParams,
-  ComposeMessageDto,
-  MarkMessagesReadDto
-} from "../types/types.d";
+  AuthentificationData,
+  SearchLodgingsDto,
+  SearchAccommodationDto,
+  SearchUsersDto,
+  AddBookingDto,
+  CreateSupportMessageDto,
+  GetTicketListParams,
+  SearchBookingsDto,
+  SendTicketDto,
+  MarkMessagesAsReadDto,
+} from '../types/types.d';
 
-export const accountApi = {
-  login: async (credentials: { email: string; password: string }) => {
-    return apiRequest("account/login", "POST", credentials);
-  },
-  register: async (userData: RegisterUserDto) => {
-    return apiRequest("account/register", "POST", userData);
-  },
-  fetchProfile: async (email: string) => {
-    return apiRequest("account/profile", "GET", undefined, { email });
-  }
-};
+export default function useFetchData() {
+  const usersApi = {
+    search(searchParams: Partial<SearchUsersDto>) {
+      const result = fetchData('users', { method: 'GET', params: searchParams });
+      return result;
+    },
+    updateRole(id: string, role: string) {
+      const result = fetchData(`users/${id}`, { method: 'PUT', data: { role } });
+      return result;
+    },
+  };
 
-export const lodgingApi = {
-  search: async (filters: SearchLodgingParams) => {
-    return apiRequest("lodgings", "GET", undefined, filters);
-  },
-  getById: async (id: string) => {
-    return apiRequest(`lodgings/${id}`, "GET");
-  },
-  create: async (data: FormData) => {
-    return apiRequest("lodgings", "POST", data, undefined, true);
-  },
-  update: async (id: string, data: FormData) => {
-    return apiRequest(`lodgings/${id}`, "PUT", data, undefined, true);
+  const authUser = {
+    login(email: string, password: string) {
+      const result = fetchData('auth/signin', { method: 'POST', data: { email, password } });
+      return result;
+    },
+    register(data: AuthentificationData) {
+      const result = fetchData('auth/signup', { method: 'POST', data });
+      return result;
+    },
+    getInfo(email: string) {
+      const result = fetchData('auth/checkauth', { method: 'GET', params: { email } });
+      return result;
+    },
   }
-};
 
-export const accommodationApi = {
-  search: async (filters: SearchAccommodationParams) => {
-    return apiRequest("accommodations", "GET", undefined, filters);
-  },
-  create: async (data: FormData) => {
-    return apiRequest("accommodations", "POST", data, undefined, true);
-  },
-  update: async (id: string, data: FormData) => {
-    return apiRequest(`accommodations/${id}`, "PUT", data, undefined, true);
-  }
-};
+  const hotelsAPI = {
+    search(searchParams: SearchLodgingsDto) {
+      const result = fetchData('lodgings', { method: 'GET', params: searchParams });
+      return result;
+    },
+    findById(id: string) {
+      const result = fetchData(`lodgings/findlodging/${id}`, { method: 'GET' });
+      return result;
+    },
+    addHotel(data: FormData) {    
+      const result = fetchData('lodgings', { method: 'POST', data }, true);
+      return result;
+    },
+    updateHotel(data: FormData, id: string) {
+      const result = fetchData(`lodgings/${id}`, { method: 'PUT', data }, true);
+      return result;
+    },
+  };
 
-export const bookingApi = {
-  create: async (bookingData: CreateBookingDto) => {
-    return apiRequest("bookings", "POST", bookingData);
-  },
-  getByUser: async (userId: string) => {
-    return apiRequest(`bookings?userId=${userId}`, "GET");
-  },
-  cancel: async (bookingId: string, userId: string) => {
-    return apiRequest(`bookings/${bookingId}`, "DELETE", { userId });
-  }
-};
+  const roomsApi = {
+    search(searchParams: SearchAccommodationDto) {
+      const result = fetchData('accommodations', { method: 'GET', params: searchParams });
+      return result;
+    },
+    addRoom(data: FormData) {    
+      const result = fetchData('accommodations', { method: 'POST', data }, true);
+      return result;
+    },
+    updateRoom(data: FormData, id: string) {
+      const result = fetchData(`accommodations/${id}`, { method: 'PUT', data }, true);
+      return result;
+    },
+  };
 
-export const assistanceApi = {
-  openTicket: async (ticketData: CreateSupportTicketDto) => {
-    return apiRequest("assistance/ticket", "POST", ticketData);
-  },
-  getTickets: async (filters: FetchChatListParams) => {
-    return apiRequest("assistance/tickets", "GET", undefined, filters);
-  },
-  sendMessage: async (messageData: ComposeMessageDto) => {
-    return apiRequest("assistance/send", "POST", messageData);
-  },
-  loadMessages: async (ticketId: string, userId: string) => {
-    return apiRequest(`assistance/messages/${ticketId}`, "GET", undefined, { userId });
-  },
-  markAsRead: async (readData: MarkMessagesReadDto) => {
-    return apiRequest("assistance/read", "POST", readData);
-  },
-  closeTicket: async (ticketId: string) => {
-    return apiRequest(`assistance/close/${ticketId}`, "POST");
+  const reservationsApi = {
+    search(searchParams: SearchBookingsDto) {
+      const result = fetchData('bookings', { method: 'GET', params: searchParams });
+      return result;
+    },
+    addReservation(data: AddBookingDto) {
+      const result = fetchData('bookings', { method: 'POST', data });
+      return result;
+    },
+    removeReservation(reservationId: string, userId: string | null) {
+      const result = fetchData(`bookings/${reservationId}`, { method: 'DELETE', data: { userId } });
+      return result;
+    },
   }
-};
 
-export const userAccountApi = {
-  updateUserRole: async (payload: UpdateUserRoleDto) => {
-    return apiRequest(`accounts/${payload.userId}`, "PUT", { role: payload.role });
+  const supportRequestApi = {
+    createRequest(data: CreateSupportMessageDto) {
+      const result = fetchData('support', { method: 'POST', data });
+      return result;
+    },
+    findRequests(searchParams: GetTicketListParams) {
+      const result = fetchData('support', { method: 'GET', params: searchParams });
+      return result;
+    },
+    sendMessage(data: SendTicketDto) {
+      const result = fetchData('support/sendticket', { method: 'POST', data });
+      return result;
+    },
+    getMessages(supportRequestId: string, userId: string) {
+      const result = fetchData(`support/getticket/${supportRequestId}`, { method: 'GET', params: { userId } });
+      return result;
+    },
+    readMessages(data: MarkMessagesAsReadDto) {
+      const result = fetchData('support/readticket', { method: 'POST', data });
+      return result;
+    },
+    closeRequest(supportRequestId: string) {
+      const result = fetchData(`support/closerequest/${supportRequestId}`, { method: 'POST' });
+      return result;
+    },
   }
-};
+
+  return {
+    usersApi, authUser, hotelsAPI, roomsApi, reservationsApi, supportRequestApi
+  };
+}

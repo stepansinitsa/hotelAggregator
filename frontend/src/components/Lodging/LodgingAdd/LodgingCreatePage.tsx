@@ -1,16 +1,15 @@
-import { Container } from "react-bootstrap";
-import LodgingCreateForm from "./LodgingCreateForm";
+import { Container } from "react-bootstrap"
+import HotelsAddForm from "./LodgingCreateForm"
 
-function LodgingCreatePage() {
+function HotelsAdd() {
   return (
-    <Container className="bg-white rounded shadow-sm p-3 mb-4">
+    <Container className="bg-white rounded shadow-sm p-2">
       <Container>
-        <h3 className="fs-5 fw-semibold">Добавить объект размещения</h3>
-        <p className="text-muted">Заполните поля ниже, чтобы создать новую гостиницу</p>
-        <LodgingCreateForm />
+        <p className="fs-2 fw-semibold">Добавить отель</p>
+        <HotelsAddForm />
       </Container>
     </Container>
-  );
+  )
 }
 
-export default LodgingCreatePage;
+export default HotelsAdd

@@ -1,53 +1,40 @@
-import { useState } from "react";
-import { Container } from "react-bootstrap";
-import { useAuthentication } from "../../hooks/useAuthentication";
-import LoginForm from "./LoginForm";
-import RegistrationForm from "./RegistrationForm";
-import UserProfileMenu from "./UserProfileMenu";
+import { Button, Container, Navbar, OverlayTrigger, Popover } from "react-bootstrap"
+import { Link } from "react-router-dom"
+import HeaderAuth from "./AppHeader"
+import SocketHiddenDiv from "./TicketNotificationHandler"
 
-function AuthContainer() {
-  const isAuthenticated = useAuthentication();
-  const [isLoginMode, setIsLoginMode] = useState(true);
-
+function HeaderMain() {
   return (
     <Container>
-      {isAuthenticated ? (
-        <UserProfileMenu />
-      ) : isLoginMode ? (
-        <>
-          <LoginForm />
-          <div>
-            <small>
-              Нет аккаунта?{" "}
-              <span
-                onClick={() => setIsLoginMode(false)}
-                className="fw-bold text-primary"
-                style={{ cursor: "pointer" }}
-              >
-                Зарегистрируйтесь
-              </span>
-            </small>
-          </div>
-        </>
-      ) : (
-        <>
-          <RegistrationForm />
-          <div>
-            <small>
-              Уже зарегистрированы?{" "}
-              <span
-                onClick={() => setIsLoginMode(true)}
-                className="fw-bold text-primary"
-                style={{ cursor: "pointer" }}
-              >
-                Войти
-              </span>
-            </small>
-          </div>
-        </>
-      )}
+      <Navbar bg="white" expand="lg" className="mt-3 mb-4 shadow-sm rounded">
+        <Container>
+          <Link className="navbar-brand fw-bold text-uppercase" to="/">
+            <img srcSet="../src/assets/img/hotel.png" alt="FindHotels" />
+            Find Hotels
+          </Link>
+          <Navbar.Toggle />
+          <Navbar.Collapse className="justify-content-end">
+            <OverlayTrigger
+              trigger="click"
+              placement="bottom"
+              rootClose={true}
+              overlay={
+                <Popover>
+                  <Popover.Header as="h3">Аккаунт</Popover.Header>
+                  <Popover.Body>
+                    <HeaderAuth />
+                  </Popover.Body>
+                </Popover>
+              }
+            >
+              <Button>Аккаунт</Button>
+            </OverlayTrigger>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+      <SocketHiddenDiv />
     </Container>
-  );
+  )
 }
 
-export default AuthContainer;
+export default HeaderMain

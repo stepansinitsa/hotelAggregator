@@ -2,85 +2,83 @@ import iziToast from "izitoast";
 import { useEffect, useState } from "react";
 import { Button, Container } from "react-bootstrap";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { lodgingApi } from "../../../api/api-client";
+import useFetchData from "../../../api/api-client";
 import { useAppDispatch, useAppSelector } from "../../../store/store-hooks";
-import { updateCurrentLodging } from "../../../store/lodging/lodgingSlice";
-import LoadingIndicator from "../../Loader/LoadingIndicator";
-import AccommodationList from "../Accommodations/AccommodationList";
-import LodgingCard from "../LodgingList/LodgingCard";
+import { setHotelsState } from "../../../store/lodgings/lodgingSlice";
+import LoaderMain from "../../Loader/LoadingIndicator";
+import HotelRoomsList from "../Accommodations/AccommodationList";
+import HotelsListItem from "../LodgingList/LodgingListPage";
 
-const LodgingDetailsPage = () => {
+function HotelPageMain() {
   const [error, setError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const user = useAppSelector((state) => state.user);
-  const currentLodging = useAppSelector((state) => state.lodging.currentLodging);
-  const { search } = useLocation();
-  const queryParams = new URLSearchParams(search);
+  const role = useAppSelector(state => state.user.role);
+  const hotelsState = useAppSelector(state => state.hotels);
+  const { hotelsAPI } = useFetchData();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
+  
   useEffect(() => {
     setError(false);
     setLoading(true);
 
-    const lodgingId = queryParams.get("id");
-    if (!lodgingId) {
-      navigate("/not-found");
+    if (!queryParams.get('id')) {
+      navigate('/error');
       return;
     }
 
-    lodgingApi.getById(lodgingId)
-      .then((result) => {
-        dispatch(updateCurrentLodging(result));
+    const id: any = queryParams.get('id');
+
+    hotelsAPI.findById(id)
+      .then(result => {  
+        dispatch(setHotelsState({ currentHotel: result.data }));
         setLoading(false);
       })
-      .catch(() => {
+      .catch(err => {
         setError(true);
         iziToast.error({
-          message: "Не удалось загрузить данные отеля",
-          position: "bottomCenter",
+          message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
+          position: 'bottomCenter',
         });
       });
   }, []);
-
+  
   return (
     <>
-      <Container className="bg-white rounded shadow-sm p-3 mb-4">
+      <Container className="bg-white rounded shadow-sm p-2 mb-3">
         <Container>
-          <h2 className="fs-5 fw-semibold">Детали жилья</h2>
-          <p className="text-muted">ID: {currentLodging._id}</p>
-          {user.role === "admin" && (
-            <Link to={`/update-lodging?id=${currentLodging._id}`}>
-              <Button variant="warning" className="me-2 mb-2">
-                Редактировать
-              </Button>
+          <p className="fs-2 fw-semibold">Информация об отеле</p>
+          {role === 'admin' &&
+            <Link to={`/update-hotel`}>
+              <Button variant="warning" className="me-1 mb-2">Редактировать</Button>
             </Link>
-          )}
+            
+          }
         </Container>
       </Container>
-
       {loading ? (
-        <LoadingIndicator />
-      ) : error ? (
-        <p className="text-center text-danger">Не удалось загрузить данные</p>
+        <LoaderMain />
       ) : (
-        <>
-          <LodgingCard lodging={currentLodging} showBtn={false} />
-          {user.role === "admin" && (
-            <Link
-              to={`/add-accommodation?lodgingId=${currentLodging._id}`}
-              className="ms-auto text-decoration-none"
-            >
-              <div className="d-grid gap-2 mb-3">
-                <Button variant="success">Добавить номер</Button>
-              </div>
-            </Link>
-          )}
-          <AccommodationList />
-        </>
+        error ? (
+          <p>Произошла ошибка при загрузке!</p>
+        ) : (
+          <>
+            <HotelsListItem hotel={hotelsState.currentHotel} showBtn={false} />
+            {role === 'admin' &&
+              <Link to={`/add-room?${hotelsState.currentHotel._id}`} className="ms-auto text-decoration-none">
+                <div className="d-grid gap-2 mb-3">
+                  <Button variant="success" size="lg">Добавить номер</Button>
+                </div>
+              </Link>
+            }
+            <HotelRoomsList />
+          </>
+        )
       )}
     </>
-  );
-};
+  )
+}
 
-export default LodgingDetailsPage;
+export default HotelPageMain;

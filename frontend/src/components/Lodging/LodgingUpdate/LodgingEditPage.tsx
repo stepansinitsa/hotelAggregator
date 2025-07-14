@@ -1,18 +1,15 @@
-import { Container } from "react-bootstrap";
-import LodgingEditForm from "./LodgingEditForm";
+import { Container } from "react-bootstrap"
+import HotelsUpdateForm from "./LodgingEditForm"
 
-function LodgingEditPage() {
-  const lodging = useAppSelector((state) => state.lodging.current);
-
+function HotelsUpdateMain() {
   return (
-    <Container className="bg-white rounded shadow-sm p-3 mb-4">
+    <Container className="bg-white rounded shadow-sm p-2">
       <Container>
-        <h3 className="fs-5 fw-semibold">Редактирование жилья</h3>
-        <p className="text-muted">Текущий объект: {lodging.name}</p>
-        <LodgingEditForm />
+        <p className="fs-2 fw-semibold">Отредактировать отель</p>
+        <HotelsUpdateForm />
       </Container>
     </Container>
-  );
+  )
 }
 
-export default LodgingEditPage;
+export default HotelsUpdateMain

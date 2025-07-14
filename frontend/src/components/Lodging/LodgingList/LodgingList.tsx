@@ -1,52 +1,54 @@
-import { Container, Pagination } from "react-bootstrap";
+import iziToast from "izitoast";
+import { useEffect, useState } from "react";
+import useFetchData from "../../../api/api-client";
 import { useAppDispatch, useAppSelector } from "../../../store/store-hooks";
-import { fetchLodgings } from "../../../store/lodging/lodgingSlice";
-import { Lodging } from "../../../types/types.d";
-import LodgingCard from "./LodgingCard";
+import { setHotelsState } from "../../../store/lodgings/lodgingSlice";
+import LoaderMain from "../../Loader/LoadingIndicator";
+import HotelsListItems from "./LodgingCard";
 
-interface LodgingListProps {
-  list: Lodging[];
-}
-
-function LodgingList({ list }: LodgingListProps) {
-  const { limit, offset, titleSearch } = useAppSelector((state) => state.lodging);
+function HotelsList() {
+  const [error, setError] = useState<boolean>(false);
+  const { hotelsAPI } = useFetchData();
+  const hotelsState = useAppSelector(state => state.hotels);
   const dispatch = useAppDispatch();
 
-  const handleNextPage = (direction: "prev" | "next") => {
-    if (direction === "next") {
-      dispatch(fetchLodgings({ offset: offset + limit, title: titleSearch }));
-    } else {
-      dispatch(fetchLodgings({ offset: Math.max(0, offset - limit), title: titleSearch }));
-    }
-  };
+  useEffect(() => {
+    setError(false);
+
+    dispatch(setHotelsState({ loading: true }));
+
+    hotelsAPI.search({
+      limit: hotelsState.limit, offset: hotelsState.offset, title: hotelsState.titleSearch,
+    })
+      .then(result => {  
+        if (result.data.length > 0) {
+          dispatch(setHotelsState({ list: result.data, loading: false }));
+        } else {
+          dispatch(setHotelsState({ offset: 0, loading: false }));
+        }
+      })
+      .catch(err => {
+        setError(true);
+        iziToast.error({
+          message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
+          position: 'bottomCenter',
+        });
+      });
+  }, [hotelsState.offset, hotelsState.titleSearch]);
 
   return (
     <>
-      {list.length === 0 ? (
-        <Container className="p-3 d-flex justify-content-center">
-          <span>Нет доступных объектов размещения</span>
-        </Container>
+      {hotelsState.loading ? (
+        <LoaderMain />
       ) : (
-        <>
-          {list.map((item) => (
-            <LodgingCard key={item._id} lodging={item} showBtn={true} />
-          ))}
-          <Pagination className="mt-3 justify-content-center">
-            {offset > 0 && (
-              <Pagination.Item onClick={() => handleNextPage("prev")}>
-                Предыдущая
-              </Pagination.Item>
-            )}
-            {list.length >= limit && (
-              <Pagination.Item onClick={() => handleNextPage("next")}>
-                Следующая
-              </Pagination.Item>
-            )}
-          </Pagination>
-        </>
+        error ? (
+          <p>Ошибка загрузки!</p>
+        ) : (
+          <HotelsListItems list={hotelsState.list} />
+        )
       )}
     </>
-  );
-};
+  )
+}
 
-export default LodgingList;
+export default HotelsList

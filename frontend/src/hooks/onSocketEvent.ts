@@ -1,14 +1,11 @@
-import { useEffect } from "react";
-import { socket } from "../socket/WebSocketClient";
+import { useEffect } from 'react';
+import { socket } from '../socket/WebSocketClient';
 
-export const onSocketEvent = (
-  event: string,
-  handler: (...args: any[]) => void
-) => {
+export const useSocketEvent = (event: string, listener: (...args: any[]) => void) => {
   useEffect(() => {
-    socket.on(event, handler);
+    socket.on(event, listener);
     return () => {
-      socket.off(event, handler);
+      socket.off(event, listener);
     };
-  }, [handler]);
+  });
 };

@@ -1,45 +1,42 @@
 import { ListGroup } from "react-bootstrap";
 import { NavLink } from "react-router-dom";
-import { useAuthentication } from "../../hooks/useAuthentication";
+import { useAuth } from "../../hooks/useAuthentication";
 import { useAppSelector } from "../../store/store-hooks";
 
-function NavigationMenu() {
-  const role = useAppSelector((state) => state.user.role);
-  const isAuthenticated = useAuthentication();
+function MenuMain() {
+  const role = useAppSelector(state => state.user.role);
+  const isAuth = useAuth();
 
   return (
     <ListGroup variant="flush" className="shadow-sm rounded text-center">
       <ListGroup.Item action>
-        <NavLink to="/" className="text-decoration-none text-secondary fw-semibold">
-          Поиск жилья
+        <NavLink className="text-decoration-none text-secondary fw-semibold" to="/">
+          Поиск отеля
         </NavLink>
       </ListGroup.Item>
-
-      {isAuthenticated && (
+      {isAuth === true &&
         <ListGroup.Item action>
-          <NavLink to="/requests" className="text-decoration-none text-secondary fw-semibold">
-            Мои обращения
+          <NavLink className="text-decoration-none text-secondary fw-semibold" to="/requests">
+            Обращения
           </NavLink>
         </ListGroup.Item>
-      )}
-
-      {role === "admin" && (
+      }
+      {role === 'admin' &&
         <ListGroup.Item action>
-          <NavLink to="/all-lodgings" className="text-decoration-none text-secondary fw-semibold">
-            Все объекты размещения
+          <NavLink className="text-decoration-none text-secondary fw-semibold" to="/all-hotels">
+            Все отели
           </NavLink>
         </ListGroup.Item>
-      )}
-
-      {(role === "admin" || role === "manager") && (
+      }
+      {(role === 'admin' || role === 'manager') &&
         <ListGroup.Item action>
-          <NavLink to="/users" className="text-decoration-none text-secondary fw-semibold">
-            Пользователи
+          <NavLink className="text-decoration-none text-secondary fw-semibold" to="/users">
+            Аккаунты
           </NavLink>
         </ListGroup.Item>
-      )}
+      }
     </ListGroup>
-  );
+  )
 }
 
-export default NavigationMenu;
+export default MenuMain

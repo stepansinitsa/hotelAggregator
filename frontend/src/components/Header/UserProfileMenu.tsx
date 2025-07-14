@@ -1,19 +1,21 @@
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../../store/store-hooks";
-import LogoutButton from "./LogoutButton";
+import ButtonLogout from "./LogoutButton";
 
-const UserProfileMenu = () => {
-  const user = useAppSelector((state) => state.user);
+function HeaderProfile() {
+  const userId = useAppSelector(state => state.user.id);
 
   return (
     <div className="d-flex flex-column">
-      <Link to={`/bookings?userId=${user.id}`} className="mb-2 text-decoration-none">
-        <Button variant="primary">Мои бронирования</Button>
+      <Link to={`/reservations?id=${userId}`} className="mb-1 text-decoration-none">
+        <Button variant="primary" >
+          Мои бронирования
+        </Button>
       </Link>
-      <LogoutButton />
+      <ButtonLogout />
     </div>
-  );
-};
+  )
+}
 
-export default UserProfileMenu;
+export default HeaderProfile;

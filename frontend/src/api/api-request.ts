@@ -1,33 +1,29 @@
-import axios from "axios";
-import { getAuthToken } from "../helpers/auth-storage.helpers";
+import axios, { AxiosResponse } from "axios";
+import { getToken } from "../helpers/auth-storage.helpers";
 
-export async function apiRequest(
-  endpoint: string,
-  method: "GET" | "POST" | "PUT" | "DELETE",
-  data?: any,
-  params?: Record<string, any>,
-  isFormData = false
-): Promise<any> {
-  const config = {
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-    url: endpoint,
-    method,
-    headers: {
-      Authorization: `Bearer ${getAuthToken() || ""}`,
-      "Content-Type": isFormData ? "multipart/form-data" : "application/json"
-    },
-    ...(data && { data }),
-    ...(params && { params })
-  };
-
-  try {
-    const response = await axios(config);
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw error.response?.data || error.message;
-    } else {
-      throw error;
-    }
-  }
+async function fetchData(url: string, opts: object, isFormData = false, callback?: () => void): Promise<AxiosResponse> { 
+  return new Promise((resolve, reject) => {
+    axios({
+      baseURL: `${import.meta.env.VITE_MAIN_URL}`,
+      url,
+      headers: {
+        Authorization: 'Bearer ' + (getToken() || ''),
+        'Content-Type': isFormData === true ? 'multipart/form-data' : 'application/json',
+      },
+      ...opts,
+    })
+      .then(result => {    
+        resolve(result);
+      })
+      .catch(error => {
+        if (axios.isAxiosError(error)) {
+          reject(error.response);
+        } else {
+          reject(error);
+        }
+      })
+      .finally(callback);
+  });
 }
+
+export default fetchData;

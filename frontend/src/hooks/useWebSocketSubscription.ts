@@ -1,23 +1,33 @@
-import { useEffect } from "react";
-import { socket } from "../socket/WebSocketClient";
-import { useAppSelector } from "../store/store-hooks";
-import { accountSlice } from "../store/user/accountSlice";
-import { useDispatch } from "react-redux";
-import { FetchChatListParams } from "../types/types.d";
+import { useEffect } from 'react';
+import { socket } from '../socket/WebSocketClient';
+import { useAppSelector } from '../store/store-hooks';
+import { GetTicketListParams } from '../types/types.d';
+import useFetchData from '../api/api-client';
 
-export const useWebSocketSubscription = () => {
-  const dispatch = useDispatch();
-  const user = useAppSelector((state) => state.user);
-  const isConnected = useAppSelector((state) => state.socketIO.isConnected);
+export const useSocketSubscribe = () => {
+  const isConnected = useAppSelector(state => state.socketIO.isConnected);
+  const user = useAppSelector(state => state.user);
+  const { supportRequestApi } = useFetchData();
 
   useEffect(() => {
-    if (!isConnected) return;
-
-    const query: FetchChatListParams = {
-      clientId: user.role === "client" ? user.id : null,
+    const query: GetTicketListParams = {
+      userId: user.id,
       isActive: true,
-    };
+    }
 
-    dispatch(accountSlice(query));
+    if (user.role === 'manager' || user.role === 'admin') {
+      query.userId = null;
+    }
+
+    supportRequestApi.findRequests(query)
+      .then(result => {  
+        const { data } = result;
+        if (isConnected) {
+          data && data.forEach((el: any) => { socket.emit('subscribeToChat', { chatId: el._id }) });
+        }
+      })
+      .catch(err => {
+        console.error(err);
+      });
   }, [isConnected]);
 };

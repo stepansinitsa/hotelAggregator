@@ -1,13 +1,13 @@
-import { Container } from "react-bootstrap";
+import { Container } from "react-bootstrap"
 
-const NotFoundPage = () => {
+function ErrorMain() {
   return (
-    <Container className="bg-white rounded shadow-sm p-3 mt-4 mb-4">
+    <Container className="bg-white rounded shadow-sm p-2">
       <Container>
-        <h2 className="fs-5 fw-semibold">Страница не найдена</h2>
+        <p className="fs-2 fw-semibold">Ошибка загрузки страницы</p>
       </Container>
     </Container>
-  );
-};
+  )
+}
 
-export default NotFoundPage;
+export default ErrorMain

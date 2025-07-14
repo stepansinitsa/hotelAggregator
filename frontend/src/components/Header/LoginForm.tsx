@@ -2,87 +2,73 @@ import iziToast from "izitoast";
 import { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { accountApi } from "../../api/api-client";
+import useFetchData from "../../api/api-client";
 import { useAppDispatch } from "../../store/store-hooks";
-import { login } from "../../store/user/accountSlice";
+import { login } from "../../store/user/userSlice";
 
-const LoginForm = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+function FormAuth() {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const { authUser } = useFetchData();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!email.trim()) {
-      iziToast.warning({
-        message: "Введите email",
-        position: "bottomCenter",
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      iziToast.warning({
-        message: "Пароль должен быть не менее 6 символов",
-        position: "bottomCenter",
-      });
-      return;
-    }
-
+  const authHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
-      const response = await accountApi.login({ email, password });
+      e.preventDefault();
 
-      dispatch(
-        login({
-          token: response.token,
-          role: response.role,
-          id: response.id,
+      if (email.length === 0) {
+        iziToast.warning({
+          message: 'Введите почту!',
+          position: 'bottomCenter',
+        });
+        return;
+      }
+
+      if (password.length < 6) {
+        iziToast.warning({
+          message: 'Пароль должен содержать 6 и более символов!',
+          position: 'bottomCenter',
+        });
+        return;
+      }
+
+      authUser.login(email, password)
+        .then(result => {
+          dispatch(login({ token: result.data.token, role: result.data.role, id: result.data.id }));
+          iziToast.success({
+            message: 'Вы успешно авторизованы',
+            position: 'bottomCenter',
+          });
+          navigate('/');
         })
-      );
-
-      iziToast.success({
-        message: "Вы вошли в систему",
-        position: "bottomCenter",
-      });
-
-      navigate("/");
-    } catch (err) {
-      iziToast.error({
-        message: "Неверные учетные данные",
-        position: "bottomCenter",
-      });
+        .catch(err => {    
+          iziToast.error({
+            message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
+            position: 'bottomCenter',
+          });
+        });
+    } catch (error) {
+      console.error(error);
     }
-  };
+  }
 
   return (
-    <Form onSubmit={handleSubmit} className="mb-4">
-      <Form.Group className="mb-3" controlId="form-email">
-        <Form.Label>Электронная почта</Form.Label>
-        <Form.Control
-          type="email"
-          placeholder="Введите ваш email"
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+    <Form className="mb-3" onSubmit={authHandler}>
+      <Form.Group className="mb-3">
+        <Form.Label>Емаил</Form.Label>
+        <Form.Control type="email" placeholder="Введите почту" onChange={(e) => setEmail(e.target.value)} required />
       </Form.Group>
 
-      <Form.Group className="mb-3" controlId="form-password">
+      <Form.Group className="mb-3">
         <Form.Label>Пароль</Form.Label>
-        <Form.Control
-          type="password"
-          placeholder="Введите пароль"
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <Form.Control type="password" placeholder="Введите пароль" onChange={(e) => setPassword(e.target.value)} required />
       </Form.Group>
-
       <Button variant="primary" type="submit">
-        Авторизоваться
+        Войти
       </Button>
     </Form>
-  );
-};
+  )
+}
 
-export default LoginForm;
+export default FormAuth

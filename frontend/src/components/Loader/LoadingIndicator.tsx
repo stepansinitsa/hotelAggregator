@@ -1,11 +1,11 @@
-import { Container, Spinner } from "react-bootstrap";
+import { Container, Spinner } from "react-bootstrap"
 
-function LoadingIndicator() {
+function LoaderMain() {
   return (
-    <Container className="p-3 d-flex justify-content-center mt-3">
-      <Spinner animation="border" variant="primary" />
+    <Container className="p-2 d-flex justify-content-center mt-2">
+      <Spinner animation="grow" variant="primary"/>
     </Container>
-  );
+  )
 }
 
-export default LoadingIndicator;
+export default LoaderMain

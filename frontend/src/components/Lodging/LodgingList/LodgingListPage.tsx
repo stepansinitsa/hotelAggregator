@@ -1,35 +1,30 @@
-import { useEffect } from "react";
-import { Button, Container, Stack } from "react-bootstrap";
+import { Button, Col, Container, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../../store/store-hooks";
-import { lodgingSlice } from "../../../store/lodging/lodgingSlice";
-import LodgingGrid from "./LodgingGrid";
+import { LodgingData } from "../../../types/types.d";
+import HotelsListItemImgs from "./LodgingImages";
 
-function LodgingListPage() {
-  const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.user);
-
-  useEffect(() => {
-    dispatch(lodgingSlice({ offset: 0, title: "" }));
-  }, []);
-
+function HotelsListItem({ hotel, showBtn }: { hotel: LodgingData, showBtn: boolean }) {  
   return (
-    <>
-      <Container className="bg-white rounded shadow-sm p-3 mb-4">
-        <Container>
-          <Stack direction="horizontal" gap={3}>
-            <h3 className="fs-5 fw-semibold">Объекты размещения</h3>
-            {user.role === "admin" && (
-              <Link to="/add-lodging" className="ms-auto">
-                <Button variant="success">Добавить объект</Button>
+    <Container className="bg-white rounded shadow-sm p-2 mb-3">
+      <Container>
+        <Row className="mt-2">
+          <Col>
+            <HotelsListItemImgs images={hotel.images} />
+          </Col>
+          <Col>
+            <p className="fs-3 text-uppercase">{hotel.title}</p>
+            <p className="text-muted">{hotel.description}</p>
+            
+            {showBtn === true &&
+              <Link to={`/hotel?id=${hotel._id}`} className="text-decoration-none">
+                <Button className="mb-2">Подробнее</Button>
               </Link>
-            )}
-          </Stack>
-        </Container>
+            }
+          </Col>
+        </Row>
       </Container>
-      <LodgingGrid />
-    </>
-  );
-};
+    </Container>
+  )
+}
 
-export default LodgingListPage;
+export default HotelsListItem

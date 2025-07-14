@@ -1,33 +1,30 @@
-import { io } from "socket.io-client";
-import { useDispatch } from "react-redux";
-import { setConnectedStatus } from "../store/websocket/websocketSlice";
+import { useEffect } from 'react';
+import { io } from 'socket.io-client';
+import { useAppDispatch } from '../store/store-hooks';
+import { setConnectedStatus } from '../store/websocket/websocketSlice';
 
-const socket = io(import.meta.env.VITE_API_BASE_URL, {
+export const socket = io(`${import.meta.env.VITE_SERVER_URL}`, {
   autoConnect: false,
 });
 
-export { socket };
-
-export default const WebSocketClient = () => {
-  const dispatch = useDispatch();
+export const SocketClient = () => {
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const handleConnect = () => {
+    function onConnect() {
       dispatch(setConnectedStatus({ isConnected: true }));
-    };
+    }
 
-    const handleDisconnect = () => {
+    function onDisconnect() {
       dispatch(setConnectedStatus({ isConnected: false }));
-    };
-
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
-
+    }
+    
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+  
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
     };
   }, []);
-
-  return null;
 };

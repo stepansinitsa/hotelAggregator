@@ -1,28 +1,28 @@
-import { useEffect } from "react";
-import { socket } from "../socket/WebSocketClient";
-import { useAppDispatch } from "../store/store-hooks";
-import { setConnectedStatus } from "../store/websocket/websocketSlice";
+import { useEffect } from 'react';
+import { socket } from '../socket/WebSocketClient';
+import { getToken } from '../helpers/auth-storage.helpers';
 
-export const useWebSocket = () => {
-  const dispatch = useAppDispatch();
-
+export const useSocket = () => {
   useEffect(() => {
-    const token = getAuthToken();
-    socket.auth = { token };
+    const token = getToken();
+    socket.io.opts.extraHeaders = {
+      Authorization: token,
+    };
     socket.connect();
 
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "authToken") {
-        socket.auth.token = event.newValue || "";
-        socket.connect();
+    const listener = (event: StorageEvent) => {
+      if (event.key === 'token') {
+        socket.io.opts.extraHeaders = {
+          Authorization: event.newValue!,
+        };
       }
     };
 
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      socket.disconnect();
-      window.removeEventListener("storage", handleStorageChange);
+    window.addEventListener('storage', listener);
+      
+    return () => { 
+      socket.disconnect(); 
+      window.removeEventListener('storage', listener);
     };
   }, []);
 };

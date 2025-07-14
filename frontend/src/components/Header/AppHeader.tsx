@@ -1,26 +1,41 @@
-import { Container, Navbar } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import AuthContainer from "./AuthContainer";
-import ChatNotificationHandler from "./ChatNotificationHandler";
+import { useState } from "react";
+import { Container } from "react-bootstrap";
+import { useAuth } from "../../hooks/useAuthentication";
+import FormAuth from "./LoginForm";
+import FormRegister from "./RegistrationForm";
+import HeaderProfile from "./UserProfileMenu";
 
-function AppHeader() {
+function HeaderAuth() {
+  const isAuth = useAuth();
+  const [authForm, setAuthForm] = useState(true);
+
   return (
     <Container>
-      <Navbar bg="white" expand="lg" className="mt-3 mb-4 shadow-sm rounded">
-        <Container>
-          <Link to="/" className="navbar-brand fw-bold text-uppercase">
-            <img src="/hotel-logo.png" alt="LodgingHub" />
-            LodgingHub
-          </Link>
-          <Navbar.Toggle />
-          <Navbar.Collapse className="justify-content-end">
-            <ChatNotificationHandler />
-            <AuthContainer />
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
+      {isAuth === true ? (
+        <HeaderProfile />
+      ) : (
+        authForm === true ? (
+          <>
+            <FormAuth />
+            <div>
+              <small>
+                Вы зарегистрированы? <p className="fw-bold" onClick={() => setAuthForm(!authForm)}>Регистрация</p>
+              </small>
+            </div>
+          </>
+        ) : (
+          <>
+            <FormRegister />
+            <div>
+              <small>
+                Регистрация прошла успешно? <p className="fw-bold" onClick={() => setAuthForm(!authForm)}>Авторизация</p>
+              </small>
+            </div>
+          </>
+        )
+      )}
     </Container>
-  );
+  )
 }
 
-export default AppHeader;
+export default HeaderAuth

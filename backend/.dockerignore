@@ -1,0 +1,11 @@
+node_modules
+.env.local
+.env.development
+.git
+*.log
+npm-debug.log*
+yarn-error.log*
+Dockerfile*
+.dockerignore
+.gitignore
+README.md

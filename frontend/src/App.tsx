@@ -2,96 +2,92 @@ import { useEffect } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import {
   BrowserRouter,
-  Routes,
   Route,
+  Routes,
 } from "react-router-dom";
+import useFetchData from "./api/api-client";
+import ChatMain from "./components/Ticket/TicketMain";
+import ErrorMain from "./components/Error/NotFoundPage";
+import HeaderMain from "./components/Header/AuthContainer";
+import HotelPageMain from "./components/Lodging/LodgingDetailsPage/LodgingDetailsPage";
+import HotelRoomUpdateMain from "./components/Lodging/AccommodationsUpdate/AccommodationEditPage";
+import HotelsAdd from "./components/Lodging/LodgingAdd/LodgingCreatePage";
+import HotelsListMain from "./components/Lodging/LodgingList/LodgingPage";
+import HotelsRoomsAddMain from "./components/Lodging/AccommodationsAdd/AccommodationCreatePage";
+import HotelsSearch from "./components/Lodging/LodgingSearch/LodgingSearchMain";
+import HotelsUpdateMain from "./components/Lodging/LodgingUpdate/LodgingEditPage";
+import MenuMain from "./components/Menu/NavigationMenu";
+import ReservationsForm from "./components/Bookings/BookingCreateForm";
+import ReservationsMain from "./components/Bookings/BookingGrid";
+import SupportMain from "./components/Support/AssistanceTicketGrid";
+import UsersMain from "./components/Users/UserPage";
+import { getToken } from "./helpers/auth-storage.helpers";
+import { SocketClient } from "./socket/WebSocketClient";
 import { useAppDispatch } from "./store/store-hooks";
-import { login, logout } from "./store/user/accountSlice";
-import WebSocketClient from "./socket/WebSocketClient";
-import onSocketEvent from "./hooks/onSocketEvent";
-import onWebSocketSubscription from "./hooks/useWebSocketSubscription";
-import NavigationMenu from "./components/Menu/NavigationMenu";
-import { useAuthentication } from "./hooks/useAuthentication";
-import { accountApi } from "./api/api-client";
-import LodgingDetailsPage from "./components/Lodging/LodgingDetailsPage/LodgingDetailsPage";
-import LodgingListPage from "./components/Lodging/LodgingList/LodgingListPage";
-import LodgingCreatePage from "./components/Lodging/LodgingAdd/LodgingCreatePage";
-import LodgingEditPage from "./components/Lodging/LodgingUpdate/LodgingEditPage";
-import AccommodationCreatePage from "./components/Lodging/Accommodations/AccommodationCreatePage";
-import AccommodationEditPage from "./components/Lodging/Accommodations/AccommodationEditPage";
-import UserAccountListPage from "./components/Users/UserAccountListPage";
-import BookingHistoryPage from "./components/Booking/BookingHistoryPage";
-import AssistanceDashboard from "./components/Assistance/AssistanceDashboard";
-import TicketChat from "./components/Assistance/TicketChat";
-import NotFoundPage from "./components/Error/NotFoundPage";
+import { login, logout } from "./store/user/userSlice";
 
-function Routing() {
+function App() {
+  SocketClient();
   const dispatch = useAppDispatch();
-  const isAuthenticated = useAuthentication();
+  const { authUser } = useFetchData();
 
-  const handleNewMessage = (dto: any) => {
-    console.log("Новое сообщение:", dto);
-  };
-
-  onSocketEvent("newMessage", handleNewMessage);
-  onSocketEvent("subscribeToChat", handleNewMessage);
-  onWebSocketSubscription();
-
-  useEffect(() => {
+  const checkAuth = async () => {
     const token = getToken();
-    if (!token) return;
 
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     try {
-      const jsonPayload = decodeURIComponent(
-        window.atob(base64)
-          .split("")
-          .map((c) =>
-            "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
-          )
-          .join("")
-          .replace(/\+/g, " ")
-      );
-      const { email } = JSON.parse(jsonPayload);
-
-      if (email) {
-        accountApi.fetchProfile(email).then((data) => {
-          dispatch(login({ ...data }));
-        });
+      if (token) {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        const { email } = JSON.parse(jsonPayload);
+        authUser.getInfo(email)
+          .then(result => {
+            dispatch(login({ token, role: result.data.role, id: result.data.id }));
+          })
+          .catch(() => {
+            dispatch(logout());
+          })
       }
     } catch (error) {
-      dispatch(logout());
+      console.error(error);
     }
-  }, []);
+  }
+
+  useEffect(() => {
+    checkAuth();
+  }, [])
 
   return (
     <BrowserRouter>
-      <Header />
+      <HeaderMain />
       <Container>
         <Row>
           <Col sm={3}>
-            <NavigationMenu />
+            <MenuMain />
           </Col>
           <Col sm={9}>
             <Routes>
-              <Route path="/" element={<LodgingDetailsPage />} />
-              <Route path="/hotels" element={<LodgingListPage />} />
-              <Route path="/add-lodging" element={<LodgingCreatePage />} />
-              <Route path="/edit-lodging" element={<LodgingEditPage />} />
-              <Route path="/add-accommodation" element={<AccommodationCreatePage />} />
-              <Route path="/edit-accommodation" element={<AccommodationEditPage />} />
-              <Route path="/profile" element={<UserAccountListPage />} />
-              <Route path="/bookings" element={<BookingHistoryPage />} />
-              <Route path="/support" element={<AssistanceDashboard />} />
-              <Route path="/chat" element={<TicketChat />} />
-              <Route path="*" element={<NotFoundPage />} />
+              <Route path="/" element={<HotelsSearch />} />
+              <Route path="/all-hotels" element={<HotelsListMain />} />
+              <Route path="/add-hotel" element={<HotelsAdd />} />
+              <Route path="/update-hotel" element={<HotelsUpdateMain />} />
+              <Route path="/add-room" element={<HotelsRoomsAddMain />} />
+              <Route path="/update-room" element={<HotelRoomUpdateMain />} />
+              <Route path="/users" element={<UsersMain />} />
+              <Route path="/hotel" element={<HotelPageMain />} />
+              <Route path="/reservations" element={<ReservationsMain />} />
+              <Route path="/reserve-room" element={<ReservationsForm />} />
+              <Route path="/requests" element={<SupportMain />} />
+              <Route path="/chat" element={<ChatMain />} />
+              <Route path="*" element={<ErrorMain />} />
             </Routes>
           </Col>
         </Row>
       </Container>
     </BrowserRouter>
-  );
+  )
 }
 
-export default Routing;
+export default App

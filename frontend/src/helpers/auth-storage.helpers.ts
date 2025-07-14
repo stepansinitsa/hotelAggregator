@@ -1,12 +1,14 @@
-export function getAuthToken(): string | null {
-  const token = localStorage.getItem("authToken");
-  return token ? JSON.parse(token) : null;
+export function getToken(): string {
+  const data = localStorage.getItem('token');
+  const result = data ? JSON.parse(data) : '';
+
+  return result;
 }
 
-export function setAuthToken(token: string): void {
-  localStorage.setItem("authToken", JSON.stringify(token));
+export function setToken(token: string): void {
+  localStorage.setItem('token', JSON.stringify(token));
 }
 
-export function removeAuthToken(): void {
-  localStorage.removeItem("authToken");
+export function removeToken(): void {
+  localStorage.removeItem('token');
 }
