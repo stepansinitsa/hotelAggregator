@@ -6,90 +6,99 @@ import useFetchData from "../../api/api-client";
 import { useAppSelector } from "../../store/store-hooks";
 
 function ReservationsForm() {
-  const [dateStart, setDateStart] = useState<string>('');
-  const [dateEnd, setDateEnd] = useState<string>('');
-  const currentHotel = useAppSelector(state => state.hotels.currentHotel);
-  const currentRoom = useAppSelector(state => state.rooms.currentRoom);
-  const userId = useAppSelector(state => state.user.id);
+  const [dateStart, setDateStart] = useState<string>("");
+  const [dateEnd, setDateEnd] = useState<string>("");
+  const currentHotel = useAppSelector((state) => state.hotels.currentHotel);
+  const currentRoom = useAppSelector((state) => state.rooms.currentRoom);
+  const userId = useAppSelector((state) => state.user.id);
   const { reservationsApi } = useFetchData();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const formHandler = async (e: any) => {
-    try {
-      e.preventDefault();
+  const formHandler = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-      const start = new Date(dateStart);
-      const end = new Date(dateEnd);
-      if (start >= end) {
-        iziToast.error({
-          message: 'Дата окончания должна бытьбольше даты начала!',
-          position: 'bottomCenter',
-        });
-        return;
-      }
+    const start = new Date(dateStart);
+    const end = new Date(dateEnd);
 
-      if (start.getDate() < new Date(Date.now()).getDate()) {
-        iziToast.error({
-          message: 'Дата начала не может быть раньше фактической даты!',
-          position: 'bottomCenter',
-        });
-        return;
-      }
-
-      const data = {
-        userId,
-        hotelId: currentHotel._id,
-        roomId: currentRoom._id,
-        dateStart,
-        dateEnd,
-      };
-
-      reservationsApi.addReservation(data)
-        .then(() => {          
-          iziToast.success({
-            message: `Вы успешно забронировали жилье "${currentRoom.title}" в отеле "${currentHotel.title}"`,
-            position: 'bottomCenter',
-          });
-          navigate(`/reservations?id=${userId}`)
-        })
-        .catch(err => {
-          iziToast.error({
-            message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
-            position: 'bottomCenter',
-          });
-        });
-    } catch (error) {
-      console.error(error);
+    if (start >= end) {
+      iziToast.error({
+        message: "Дата выезда должна быть больше даты заезда",
+        position: "bottomCenter",
+      });
+      return;
     }
-  }
+
+    if (start < new Date()) {
+      iziToast.error({
+        message: "Дата заезда не может быть раньше текущей даты",
+        position: "bottomCenter",
+      });
+      return;
+    }
+
+    const data = {
+      userId,
+      hotelId: currentHotel._id,
+      roomId: currentRoom._id,
+      dateStart,
+      dateEnd,
+    };
+
+    try {
+      await reservationsApi.addReservation(data);
+      iziToast.success({
+        message: `Вы успешно забронировали "${currentRoom.title}" в "${currentHotel.title}"`,
+        position: "bottomCenter",
+      });
+      navigate(`/reservations?id=${userId}`);
+    } catch (err) {
+      iziToast.error({
+        message: "Ошибка при бронировании",
+        position: "bottomCenter",
+      });
+    }
+  };
 
   return (
-    <Container className="bg-white rounded shadow-sm p-2">
+    <Container className="bg-white rounded shadow-sm p-3 mb-4">
       <Container>
-        <p className="fs-2 fw-semibold">Забронировать номер</p>
-        <p className="text-muted">Отель: {currentHotel.title}</p>
+        <h3 className="fs-5 fw-semibold">Бронирование номера</h3>
+        <p className="text-muted">Объект размещения: {currentHotel.title}</p>
         <p className="text-muted">Номер: {currentRoom.title}</p>
-        <Form className="mb-3" onSubmit={formHandler}>
-          <Form.Group className="mb-3">
-            <Form.Label>Дата старта</Form.Label>
-            <Form.Control type="date" className="mb-3" placeholder="Выберите дату" onChange={(e) => setDateStart(e.target.value)} required />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Дата окончания</Form.Label>
-            <Form.Control type="date" className="mb-3" placeholder="Выберите дату" onChange={(e) => setDateEnd(e.target.value)} required />
-          </Form.Group>
-          
-          <Button variant="success" type="submit">
-            Забронировать
-          </Button>{' '}
-          <Button variant="secondary" type="reset">
-            Очистить
-          </Button>
-        </Form>
       </Container>
+
+      <Form onSubmit={formHandler} className="mt-3">
+        <Form.Group className="mb-3" controlId="form-check-in">
+          <Form.Label>Дата заезда</Form.Label>
+          <Form.Control
+            type="date"
+            min={new Date().toISOString().split("T")[0]}
+            value={dateStart}
+            onChange={(e) => setDateStart(e.target.value)}
+            required
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3" controlId="form-check-out">
+          <Form.Label>Дата выезда</Form.Label>
+          <Form.Control
+            type="date"
+            min={dateStart || new Date().toISOString().split("T")[0]}
+            value={dateEnd}
+            onChange={(e) => setDateEnd(e.target.value)}
+            required
+          />
+        </Form.Group>
+
+        <Button variant="success" type="submit">
+          Забронировать
+        </Button>{" "}
+        <Button variant="secondary" type="reset">
+          Очистить
+        </Button>
+      </Form>
     </Container>
-  )
+  );
 }
 
-export default ReservationsForm
+export default ReservationsForm;

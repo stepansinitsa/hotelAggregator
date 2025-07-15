@@ -4,56 +4,55 @@ import { setHotelsState } from "../../../store/lodgings/lodgingSlice";
 import { LodgingAccomodationData } from "../../../types/types.d";
 import HotelRoomsItem from "./AccommodationCard";
 
-interface propData {
-  list: LodgingAccomodationData[],
+interface AccommodationTableProps {
+  list: LodgingAccomodationData[];
 }
 
-function HotelRoomsItems(data: propData) {
-  const roomsState = useAppSelector(state => state.rooms);
+function HotelRoomsItems({ list }: AccommodationTableProps) {
   const dispatch = useAppDispatch();
-  const { list } = data;
+  const hotelsState = useAppSelector((state) => state.hotels);
 
-  const handleNextPage = async (data: string) => {
+  const handlePageChange = (direction: string) => {
     try {
-      if (data === 'plus') {
-        dispatch(setHotelsState({ offset: roomsState.offset + roomsState.limit }));
-      } else if (data === 'minus') {
-        dispatch(setHotelsState({ offset: roomsState.offset - roomsState.limit }));
+      if (direction === 'plus') {
+        dispatch(setHotelsState({ offset: hotelsState.offset + hotelsState.limit }));
+      } else if (direction === 'minus') {
+        dispatch(setHotelsState({ offset: Math.max(0, hotelsState.offset - hotelsState.limit) }));
       }
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
+      console.error("Ошибка при переходе по страницам", e);
     }
-  }
-  
+  };
+
   return (
     <>
       {list.length === 0 ? (
         <Container className="p-2 d-flex justify-content-center">
-          <span>Комнаты для этого отеля отсутствуют!</span>
+          <p>Нет доступных вариантов</p>
         </Container>
       ) : (
         <>
-          {list.map(elem =>
-            <HotelRoomsItem key={elem._id} room={elem} />
-          )}
-          <Pagination className="mt-3">
-            {roomsState.offset > 0 && 
-              <Pagination.Item onClick={() => handleNextPage('minus')}>
+          {list.map((item) => (
+            <HotelRoomsItem key={item._id} room={item} />
+          ))}
+
+          <Pagination className="mt-3 justify-content-center">
+            {hotelsState.offset > 0 && (
+              <Pagination.Item onClick={() => handlePageChange('minus')}>
                 Назад
               </Pagination.Item>
-            }
-            {roomsState.list.length >= roomsState.limit && 
-              <Pagination.Item onClick={() => handleNextPage('plus')}>
-                Дальше
+            )}
+
+            {list.length >= hotelsState.limit && (
+              <Pagination.Item onClick={() => handlePageChange('plus')}>
+                Следующая
               </Pagination.Item>
-            }
+            )}
           </Pagination>
         </>
-        
       )}
-      
     </>
-  )
+  );
 }
 
-export default HotelRoomsItems
+export default HotelRoomsItems;

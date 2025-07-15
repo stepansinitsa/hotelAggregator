@@ -7,68 +7,79 @@ import { useAppDispatch } from "../../store/store-hooks";
 import { login } from "../../store/user/userSlice";
 
 function FormAuth() {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const { authUser } = useFetchData();
-  const dispatch = useAppDispatch();
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { authUser } = useFetchData();
 
-  const authHandler = async (e: React.FormEvent<HTMLFormElement>) => {
-    try {
-      e.preventDefault();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-      if (email.length === 0) {
-        iziToast.warning({
-          message: 'Введите почту!',
-          position: 'bottomCenter',
-        });
-        return;
-      }
-
-      if (password.length < 6) {
-        iziToast.warning({
-          message: 'Пароль должен содержать 6 и более символов!',
-          position: 'bottomCenter',
-        });
-        return;
-      }
-
-      authUser.login(email, password)
-        .then(result => {
-          dispatch(login({ token: result.data.token, role: result.data.role, id: result.data.id }));
-          iziToast.success({
-            message: 'Вы успешно авторизованы',
-            position: 'bottomCenter',
-          });
-          navigate('/');
-        })
-        .catch(err => {    
-          iziToast.error({
-            message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
-            position: 'bottomCenter',
-          });
-        });
-    } catch (error) {
-      console.error(error);
+    if (!email.trim()) {
+      iziToast.warning({
+        message: "Пожалуйста, введите email",
+        position: "bottomCenter",
+      });
+      return;
     }
-  }
+
+    if (password.length < 6) {
+      iziToast.warning({
+        message: "Пароль должен содержать минимум 6 символов",
+        position: "bottomCenter",
+      });
+      return;
+    }
+
+    try {
+      const result = await authUser.login(email, password);
+      const userData = result.data;
+
+      dispatch(login({ token: userData.token, role: userData.role, id: userData.id, email: userData.email }));
+      iziToast.success({
+        message: "Авторизация успешна",
+        position: "bottomCenter",
+      });
+
+      navigate("/");
+    } catch (err: any) {
+      iziToast.error({
+        message: err?.response?.data?.message || "Ошибка при входе",
+        position: "bottomCenter",
+      });
+    }
+  };
 
   return (
-    <Form className="mb-3" onSubmit={authHandler}>
-      <Form.Group className="mb-3">
-        <Form.Label>Емаил</Form.Label>
-        <Form.Control type="email" placeholder="Введите почту" onChange={(e) => setEmail(e.target.value)} required />
+    <Form onSubmit={handleLogin} className="mb-3">
+      <Form.Group className="mb-3" controlId="form-login-email">
+        <Form.Label>Email</Form.Label>
+        <Form.Control
+          type="email"
+          placeholder="Введите почту"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
       </Form.Group>
 
-      <Form.Group className="mb-3">
+      <Form.Group className="mb-3" controlId="form-login-password">
         <Form.Label>Пароль</Form.Label>
-        <Form.Control type="password" placeholder="Введите пароль" onChange={(e) => setPassword(e.target.value)} required />
+        <Form.Control
+          type="password"
+          placeholder="Введите пароль"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
       </Form.Group>
+
       <Button variant="primary" type="submit">
         Войти
       </Button>
     </Form>
-  )
+  );
 }
 
-export default FormAuth
+export default FormAuth;

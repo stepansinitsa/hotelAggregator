@@ -7,35 +7,39 @@ import HeaderProfile from "./UserProfileMenu";
 
 function HeaderAuth() {
   const isAuth = useAuth();
-  const [authForm, setAuthForm] = useState(true);
+  const [isLoginView, setLoginView] = useState(true);
 
   return (
     <Container>
-      {isAuth === true ? (
+      {isAuth ? (
         <HeaderProfile />
+      ) : isLoginView ? (
+        <>
+          <FormAuth />
+          <div className="mt-2 text-center">
+            <small>
+              Нужна регистрация?{" "}
+              <p className="fw-bold d-inline cursor-pointer" onClick={() => setLoginView(false)}>
+                Регистрация
+              </p>
+            </small>
+          </div>
+        </>
       ) : (
-        authForm === true ? (
-          <>
-            <FormAuth />
-            <div>
-              <small>
-                Вы зарегистрированы? <p className="fw-bold" onClick={() => setAuthForm(!authForm)}>Регистрация</p>
-              </small>
-            </div>
-          </>
-        ) : (
-          <>
-            <FormRegister />
-            <div>
-              <small>
-                Регистрация прошла успешно? <p className="fw-bold" onClick={() => setAuthForm(!authForm)}>Авторизация</p>
-              </small>
-            </div>
-          </>
-        )
+        <>
+          <FormRegister />
+          <div className="mt-2 text-center">
+            <small>
+              Уже зарегистрированы?{" "}
+              <p className="fw-bold d-inline cursor-pointer" onClick={() => setLoginView(true)}>
+                Авторизация
+              </p>
+            </small>
+          </div>
+        </>
       )}
     </Container>
-  )
+  );
 }
 
-export default HeaderAuth
+export default HeaderAuth;

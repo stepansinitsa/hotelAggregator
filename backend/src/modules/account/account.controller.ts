@@ -9,17 +9,17 @@ import { RegisterUserDto } from './dto/register-user.dto';
 export class AccountController {
   constructor(private accountService: AuthService) {}
 
-  @Post('/register')
+  @Post('auth/signup')
   regist(@Body() registrationData: RegisterUserDto): Promise<AccountResponseDto> {
     return this.accountService.regist(registrationData);
   }
 
-  @Post('/login')
+  @Post('auth/signin')
   login(@Body() credentials: LoginCredentialsDto): Promise<AccountResponseDto> {
     return this.accountService.login(credentials);
   }
 
-  @Get('/verify')
+  @Get('auth/checkauth')
   @UseGuards(TokenAuthGuard)
   verifySession(
     @Query() data: { email: string },

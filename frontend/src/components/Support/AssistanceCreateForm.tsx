@@ -3,58 +3,71 @@ import { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import useFetchData from "../../api/api-client";
 import { useAppSelector } from "../../store/store-hooks";
+import { useNavigate } from "react-router-dom";
 
 function SupportForm() {
-  const [text, setText] = useState<string>('');
-  const userId = useAppSelector(state => state.user.id);
+  const [message, setMessage] = useState<string>("");
+  const currentUser = useAppSelector((state) => state.user);
   const { supportRequestApi } = useFetchData();
+  const navigate = useNavigate();
 
-  const formHandler = async (e: any) => {
-    try {
-      e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-      if (text.length > 1000) {
-        iziToast.warning({
-          message: 'Описание проблемы должно вмещать до 1000 символов!',
-          position: 'bottomCenter',
-        });
-        return;
-      }
-
-      supportRequestApi.createRequest({ userId, text })
-        .then(() => {          
-          iziToast.success({
-            message: 'Вы успешно создали обращение',
-            position: 'bottomCenter',
-          });
-          window.location.reload();
-        })
-        .catch(err => {
-          iziToast.error({
-            message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
-            position: 'bottomCenter',
-          });
-        });
-    } catch (error) {
-      console.error(error);
+    if (!currentUser.id) {
+      iziToast.warning({
+        message: "Вы должны быть авторизованы",
+        position: "bottomCenter",
+      });
+      return;
     }
-  }
+
+    if (message.length > 1000) {
+      iziToast.warning({
+        message: "Сообщение не должно превышать 1000 символов",
+        position: "bottomCenter",
+      });
+      return;
+    }
+
+    try {
+      await supportRequestApi.createRequest({ userId: currentUser.id, text: message });
+      iziToast.success({
+        message: "Обращение успешно отправлено",
+        position: "bottomCenter",
+      });
+      navigate("/support");
+    } catch (err: any) {
+      iziToast.error({
+        message: err?.response?.data?.message || "Ошибка при создании обращения",
+        position: "bottomCenter",
+      });
+    }
+  };
 
   return (
-    <Form className="mb-3" onSubmit={formHandler}>
-      <Form.Group className="mb-3">
-        <Form.Label>Введите текст нового обращения</Form.Label>
-        <Form.Control as="textarea" rows={3} className="mb-3" maxLength={1000} placeholder="Введите текст нового обращения" onChange={(e) => setText(e.target.value)} required />
+    <Form onSubmit={handleSubmit} className="mb-4">
+      <Form.Group className="mb-3" controlId="form-support-message">
+        <Form.Label>Текст обращения</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={3}
+          maxLength={1000}
+          placeholder="Опишите вашу проблему"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          required
+        />
       </Form.Group>
-      
+
       <Button variant="success" type="submit">
         Создать обращение
-      </Button>{' '}
+      </Button>{" "}
       <Button variant="secondary" type="reset">
         Очистить
       </Button>
     </Form>
-  )
+  );
 }
 
 export default SupportForm;

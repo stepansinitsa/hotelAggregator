@@ -1,29 +1,35 @@
 import { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 
-interface propData {
-  handleSendMessage: Function;
+interface ChatInputProps {
+  handleSendMessage: (text: string) => void;
 }
 
-function ChatForm(data: propData) {
-  const { handleSendMessage } = data;
-  const [text, setText] = useState<string>();
+function ChatForm({ handleSendMessage }: ChatInputProps) {
+  const [text, setText] = useState<string>("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+
+    handleSendMessage(text);
+    setText("");
+  };
 
   return (
-    <Form>
+    <Form onSubmit={handleSubmit} className="d-flex gap-2 mb-3">
       <Form.Control
-        className="mb-2"
-        placeholder="Введите сообщение"
-        aria-label="Введите сообщение"
-        aria-describedby="chat-send-message"
+        type="text"
+        placeholder="Введите сообщение..."
+        value={text}
         onChange={(e) => setText(e.target.value)}
         required
       />
-      <Button id="chat-send-message mt-1" onClick={() => handleSendMessage(text)} type="reset">
+      <Button variant="primary" onClick={() => handleSendMessage(text)}>
         Отправить
       </Button>
     </Form>
-  )
+  );
 }
 
 export default ChatForm;

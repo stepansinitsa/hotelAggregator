@@ -1,51 +1,48 @@
 import { Button, Container, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { SupportRequestData } from "../../types/types";
+import { SupportRequestData } from "../../types/types.d";
 
-interface propData {
+interface AssistanceTableProps {
   list: SupportRequestData[];
 }
 
-function SupportTable(data: propData) {
-  const { list } = data;
-
+function SupportTable({ list }: AssistanceTableProps) {
   return (
     <Container>
       {list.length > 0 ? (
         <>
-          <Table striped hover className="p-2 rounded text-center">
+          <Table striped hover bordered responsive className="shadow-sm rounded text-center">
             <thead>
               <tr>
                 <th>Имя</th>
-                <th>Почта</th>
+                <th>Email</th>
                 <th>Телефон</th>
-                <th>Дата отправки</th>
+                <th>Дата обращения</th>
                 <th>Действия</th>
               </tr>
             </thead>
             <tbody>
-              {list.map(elem =>
-                <tr key={elem._id}>
-                  <td>{elem.userId.name}</td>
-                  <td>{elem.userId.email}</td>
-                  <td>{elem.userId.contactPhone}</td>
-                  <td>{new Date(elem.createdAt).toLocaleDateString()}</td>
+              {list.map((ticket) => (
+                <tr key={ticket._id}>
+                  <td>{ticket.userId.name}</td>
+                  <td>{ticket.userId.email}</td>
+                  <td>{ticket.userId.contactPhone || "-"}</td>
+                  <td>{new Date(ticket.createdAt).toLocaleDateString()}</td>
                   <td>
-                    <Link to={`/chat?id=${elem._id}&email=${elem.userId.email}`} className="text-decoration-none">
-                      <Button variant="warning" className="mb-1">Перейти</Button>
+                    <Link to={`/chat?id=${ticket._id}&email=${ticket.userId.email}`} className="text-decoration-none">
+                      <Button variant="warning" size="sm">Перейти</Button>
                     </Link>
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </Table>
         </>
       ) : (
-        <p className="text-muted text-center">Нет обращений!</p>
+        <p className="text-muted text-center mt-3">Нет активных обращений</p>
       )}
-      
     </Container>
-  )
+  );
 }
 
 export default SupportTable;

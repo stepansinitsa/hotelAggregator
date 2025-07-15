@@ -3,13 +3,13 @@ import { UserPageData } from '../../types/types.d';
 
 interface UsersState {
   loading: boolean;
-  offset: number,
-  limit: number,
-  email: string,
-  name: string,
-  contactPhone: string,
-  list: UserPageData[],
-  render: boolean,
+  offset: number;
+  limit: number;
+  email: string;
+  name: string;
+  contactPhone: string;
+  list: UserPageData[];
+  render: boolean;
 }
 
 const initialState: UsersState = {
@@ -21,17 +21,17 @@ const initialState: UsersState = {
   contactPhone: '',
   list: [],
   render: true,
-}
+};
 
 const usersSlice = createSlice({
   name: 'users',
   initialState,
   reducers: {
     setUsersState: (state, action: PayloadAction<Partial<UsersState>>) => {
-      Object.assign(state, action.payload);
+      return { ...state, ...action.payload };
     },
-  }
-})
+  },
+});
 
 export const { setUsersState } = usersSlice.actions;
 

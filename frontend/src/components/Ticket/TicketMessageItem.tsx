@@ -2,29 +2,27 @@ import { Card } from "react-bootstrap";
 import { useAppSelector } from "../../store/store-hooks";
 import { TicketMessageData } from "../../types/types.d";
 
-interface propData {
+interface MessageItemProps {
   message: TicketMessageData;
 }
 
-function ChatMessageItem(data: propData) {
-  const { message } = data;
-  const user = useAppSelector(state => state.user);
-
-  let background = '#e8f1f3';
-  if (message.authorId !== user.id) {
-    background = '#efefef';
-  }
+function ChatMessageItem({ message }: MessageItemProps) {
+  const currentUser = useAppSelector((state) => state.user);
+  const isMine = message.authorId === currentUser.id;
 
   return (
-    <Card style={{ maxWidth: '27rem', background }} className={message.authorId === user.id ? "align-self-end m-2" : "align-self-start m-2"}>
+    <Card
+      bg={isMine ? "primary" : "light"}
+      text={isMine ? "white" : "dark"}
+      className={`align-self-${isMine ? "end" : "start"} m-2`}
+      style={{ maxWidth: "27rem" }}
+    >
       <Card.Body>
-        <Card.Subtitle className="mb-2 text-muted">{new Date(message.sentAt).toLocaleDateString()}</Card.Subtitle>
-        <Card.Text>
-          {message.text}
-        </Card.Text>
+        <small className="text-muted">{new Date(message.sentAt).toLocaleString()}</small>
+        <Card.Text>{message.text}</Card.Text>
       </Card.Body>
     </Card>
-  )
+  );
 }
 
 export default ChatMessageItem;

@@ -2,12 +2,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { LodgingData } from '../../types/types.d';
 
 interface HotelsState {
-  offset: number,
-  limit: number,
-  titleSearch: string,
-  loading: boolean,
-  list: LodgingData[],
-  currentHotel: LodgingData,
+  offset: number;
+  limit: number;
+  titleSearch: string;
+  loading: boolean;
+  list: LodgingData[];
+  currentHotel: LodgingData;
 }
 
 const initialState: HotelsState = {
@@ -22,18 +22,18 @@ const initialState: HotelsState = {
     description: '',
     images: [],
   },
-}
+};
 
 const hotelsSlice = createSlice({
   name: 'hotels',
   initialState,
   reducers: {
     setHotelsState: (state, action: PayloadAction<Partial<HotelsState>>) => {
-      Object.assign(state, action.payload);
+      return { ...state, ...action.payload };
     },
-  }
-})
+  },
+});
 
-export const { setHotelsState } = hotelsSlice.actions
+export const { setHotelsState } = hotelsSlice.actions;
 
-export default hotelsSlice.reducer
+export default hotelsSlice.reducer;

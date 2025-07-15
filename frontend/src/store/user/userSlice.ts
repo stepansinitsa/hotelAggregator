@@ -1,38 +1,44 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { removeToken, setToken } from '../../helpers/auth-storage.helpers';
 
-interface UserState {
-  token: string | null;
+interface AccountState {
+  isAuthenticated: boolean;
   role: string;
-  isAuth: boolean;
   id: string | null;
+  email: string | null;
 }
 
-const initialState: UserState = {
-  token: null,
+const initialState: AccountState = {
+  isAuthenticated: false,
   role: 'client',
-  isAuth: false,
   id: null,
-}
+  email: null,
+};
 
-const userSlice = createSlice({
-  name: 'user',
+const accountSlice = createSlice({
+  name: 'account',
   initialState,
   reducers: {
-    login: (state, action: PayloadAction<{ token: string; role: string, id: string }>) => {
-      state.token = action.payload.token;
-      setToken(action.payload.token);
-      state.isAuth = true;
-      state.role = action.payload.role;
-      state.id = action.payload.id;
+    login: (state, action: PayloadAction<{ id: string; role: string; email: string; token: string }>) => {
+      const { id, role, email, token } = action.payload;
+      state.isAuthenticated = true;
+      state.id = id;
+      state.role = role;
+      state.email = email;
+      setToken(token);
     },
     logout: (state) => {
-      Object.assign(state, initialState);
+      Object.assign(state, {
+        isAuthenticated: false,
+        role: 'client',
+        id: null,
+        email: null,
+      });
       removeToken();
     },
-  }
-})
+  },
+});
 
-export const { login, logout } = userSlice.actions
+export const { login, logout } = accountSlice.actions;
 
-export default userSlice.reducer
+export default accountSlice.reducer;

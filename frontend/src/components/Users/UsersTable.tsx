@@ -6,97 +6,102 @@ import { useAppDispatch, useAppSelector } from "../../store/store-hooks";
 import { setUsersState } from "../../store/users/usersSlice";
 import { UserPageData } from "../../types/types.d";
 
-interface propData {
-  list: UserPageData[],
+interface UsersTableProps {
+  list: UserPageData[];
 }
 
-function UsersTable(data: propData) {
-  const usersState = useAppSelector(state => state.users);
+function UsersTable({ list }: UsersTableProps) {
   const dispatch = useAppDispatch();
-  const { list } = data;
+  const usersState = useAppSelector((state) => state.users);
   const { usersApi } = useFetchData();
 
-  const handleNextPage = (data: string) => {
+  const handlePageChange = (direction: string) => {
     try {
-      if (data === 'plus') {
+      if (direction === "plus") {
         dispatch(setUsersState({ offset: usersState.offset + usersState.limit }));
-      } else if (data === 'minus') {
-        dispatch(setUsersState({ offset: usersState.offset - usersState.limit }));
+      } else if (direction === "minus") {
+        dispatch(setUsersState({ offset: Math.max(0, usersState.offset - usersState.limit) }));
       }
     } catch (error) {
-      console.error(error);
+      console.error("Ошибка при переходе между страницами:", error);
     }
-  }
+  };
 
-  const handleChangeRole = async (id: string, role: string) => {
+  const changeUserRole = async (userId: string, newRole: string) => {
     try {
-      usersApi.updateRole(id, role)
-        .then(result => {  
-          iziToast.success({
-            message: `Пользователю ${result.data.email} успешно установлена роль "${role}"`,
-            position: 'bottomCenter',
-          });
-          dispatch(setUsersState({ render: !usersState.render }));
-        })
-        .catch(err => {
-          iziToast.error({
-            message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
-            position: 'bottomCenter',
-          });
-        });
-    } catch (error) {
-      console.error(error);
+      await usersApi.updateRole(userId, newRole);
+      iziToast.success({
+        message: `Роль пользователя обновлена на "${newRole}"`,
+        position: "bottomCenter",
+      });
+      dispatch(setUsersState({ render: !usersState.render }));
+    } catch (err: any) {
+      iziToast.error({
+        message: typeof err.data.message === "string"
+          ? err.data.message
+          : err.data.message[0],
+        position: "bottomCenter",
+      });
     }
-  }
+  };
 
   return (
     <Container>
-      <Table striped hover className="p-2 rounded text-center">
+      <Table striped bordered hover responsive className="shadow-sm rounded text-center">
         <thead>
           <tr>
             <th>Имя</th>
             <th>Телефон</th>
-            <th>Почта</th>
+            <th>Email</th>
             <th>Роль</th>
             <th>Действия</th>
           </tr>
         </thead>
         <tbody>
-          {list.map(elem =>
-            <tr key={elem._id}>
-              <td>{elem.name}</td>
-              <td>{elem.contactPhone}</td>
-              <td>{elem.email}</td>
-              <td>{elem.role}</td>
+          {list.map((user) => (
+            <tr key={user._id}>
+              <td>{user.name}</td>
+              <td>{user.contactPhone || "-"}</td>
+              <td>{user.email}</td>
+              <td>{user.role}</td>
               <td>
-                <Link to={`/reservations?id=${elem._id}`} className="text-decoration-none">
-                  <Button variant="warning" className="mb-1">Бронирования</Button>
+                <Link to={`/bookings?userId=${user._id}`} className="text-decoration-none me-2">
+                  <Button variant="outline-secondary" size="sm" className="mb-1">
+                    Бронирования
+                  </Button>
                 </Link>
-                <DropdownButton title="Выдать роль">
-                  <Dropdown.Item onClick={() => handleChangeRole(elem._id, 'client')}>Клиент</Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleChangeRole(elem._id, 'manager')}>Менеджер</Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleChangeRole(elem._id, 'admin')}>Админ</Dropdown.Item>
+                <DropdownButton title="Сменить роль" variant="outline-primary" size="sm">
+                  <Dropdown.Item onClick={() => changeUserRole(user._id, "client")}>
+                    Клиент
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => changeUserRole(user._id, "manager")}>
+                    Менеджер
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => changeUserRole(user._id, "admin")}>
+                    Администратор
+                  </Dropdown.Item>
                 </DropdownButton>
               </td>
             </tr>
-          )}
+          ))}
         </tbody>
       </Table>
-      <Pagination className="mt-3">
-        {usersState.offset > 0 && 
-          <Pagination.Item onClick={() => handleNextPage('minus')}>
+
+      <Pagination className="justify-content-center mt-3">
+        {usersState.offset > 0 && (
+          <Pagination.Item onClick={() => handlePageChange("minus")}>
             Назад
           </Pagination.Item>
-        }
-        {usersState.list.length >= usersState.limit && 
-          <Pagination.Item onClick={() => handleNextPage('plus')}>
-            Дальше
+        )}
+
+        {list.length >= usersState.limit && (
+          <Pagination.Item onClick={() => handlePageChange("plus")}>
+            Вперёд
           </Pagination.Item>
-        }
+        )}
       </Pagination>
-      
     </Container>
-  )
+  );
 }
 
 export default UsersTable;

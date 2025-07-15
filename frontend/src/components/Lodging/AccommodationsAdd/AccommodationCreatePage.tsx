@@ -3,17 +3,15 @@ import { useAppSelector } from "../../../store/store-hooks";
 import HotelRoomsAddForm from "./AccommodationCreateForm";
 
 function HotelsRoomsAddMain() {
-  const currentHotel = useAppSelector(state => state.hotels.currentHotel);
+  const currentHotel = useAppSelector((state) => state.hotels.currentHotel);
 
   return (
-    <Container className="bg-white rounded shadow-sm p-2">
-      <Container>
-        <p className="fs-2 fw-semibold">Добавить жилье</p>
-        <p className="text-muted">Отель: {currentHotel.title}</p>
-        <HotelRoomsAddForm />
-      </Container>
+    <Container className="bg-white rounded shadow-sm p-3 mb-4">
+      <h3 className="fs-5 fw-semibold">Добавление нового жилья</h3>
+      <p className="text-muted mb-3">Объект размещения: {currentHotel.title}</p>
+      <HotelRoomsAddForm />
     </Container>
-  )
+  );
 }
 
-export default HotelsRoomsAddMain
+export default HotelsRoomsAddMain;

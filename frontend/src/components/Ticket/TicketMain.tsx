@@ -2,144 +2,129 @@ import iziToast from "izitoast";
 import { useEffect, useState } from "react";
 import { Button, Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import useFetchData from "../../api/api-client";
-import { useSocketEvent } from "../../hooks/onSocketEvent";
 import { useAppSelector } from "../../store/store-hooks";
 import { WebSocketDto } from "../../types/types.d";
+import useFetchData from "../../api/api-client";
+import { onSocketEvent } from "../../hooks/onSocketEvent";
 import LoaderMain from "../Loader/LoadingIndicator";
 import ChatForm from "./TicketForm";
 import ChatMessages from "./TicketMessages";
 
 function ChatMain() {
-  const [error, setError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
   const [messages, setMessages] = useState<any>([]);
-  const user = useAppSelector(state => state.user);
-  const queryParams = new URLSearchParams(location.search);
   const navigate = useNavigate();
+  const user = useAppSelector((state) => state.user);
+  const queryParams = new URLSearchParams(location.search);
+  const supportRequestId = queryParams.get("id");
+  const userEmail = queryParams.get("email");
   const { supportRequestApi } = useFetchData();
 
-  const listener = (socketDto: WebSocketDto) => {
-    console.log(socketDto);
-    if (user.id !== socketDto.author.id) {
-      setMessages([...messages, {
-        _id: socketDto._id,
-        authorId: socketDto.author.id,
-        text: socketDto.text,
-        sentAt: socketDto.sentAt,
-      }])
+  const handleNewMessage = (dto: WebSocketDto) => {
+    if (dto.author.id !== user.id) {
+      setMessages((prev: WebSocketDto[]) => [...prev, dto]);
     }
   };
-  useSocketEvent('subscribeToChat', listener);
 
-  const handleSendMessage = (text: string) => {
-    try {
-      if (text.length === 0) {
-        iziToast.warning({
-          message: 'Вы должны текст сообщения для отправки!',
-          position: 'bottomCenter',
-        });
-      }
+  onSocketEvent("subscribeToChat", handleNewMessage);
 
-      const supportRequestId: any = queryParams.get('id');
-
-      const sendMessageDto: any = {
-        authorId: user.id,
-        supportRequestId,
-        text,
-      }
-
-      supportRequestApi.sendMessage(sendMessageDto)
-        .then(result => {
-          setMessages([...messages, result.data]);
-        })
-        .catch(err => {
-          iziToast.error({
-            message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
-            position: 'bottomCenter',
-          });
-        });
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  const handleCloseRequest = () => {
-    try {
-      const supportRequestId: any = queryParams.get('id');
-
-      supportRequestApi.closeRequest(supportRequestId)
-        .then(() => {          
-          iziToast.success({
-            message: 'Вы успешно закрыли обращение',
-            position: 'bottomCenter',
-          });
-          navigate(-1);
-        })
-        .catch(err => {
-          iziToast.error({
-            message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
-            position: 'bottomCenter',
-          });
-        });
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  useEffect(() => {
-    if (!queryParams.get('id') || !queryParams.get('email')) {
-      navigate('/error');
+  const sendMessage = async (text: string) => {
+    if (!text.trim()) {
+      iziToast.warning({
+        message: "Сообщение не может быть пустым",
+        position: "bottomCenter",
+      });
       return;
     }
 
-    const supportRequestId: any = queryParams.get('id');
-    const requestUserId: any = user.id;
+    if (!supportRequestId || !user.id) {
+      return;
+    }
 
-    supportRequestApi.getMessages(supportRequestId, requestUserId)
-      .then(result => {
-        setMessages(result.data);
+    try {
+      const result = await supportRequestApi.sendMessage({
+        authorId: user.id.toString(),
+        supportRequestId: supportRequestId,
+        text: text,
+      });
+
+      setMessages((prev: WebSocketDto[]) => [...prev, result.data]);
+    } catch (err: any) {
+      iziToast.error({
+        message: err?.response?.data?.message || "Ошибка при отправке сообщения",
+        position: "bottomCenter",
+      });
+    }
+  };
+
+  const closeTicket = async () => {
+    try {
+      if (!supportRequestId) return;
+      
+      await supportRequestApi.closeRequest(supportRequestId);
+      iziToast.success({
+        message: "Обращение закрыто",
+        position: "bottomCenter",
+      });
+      navigate(-1);
+    } catch (err: any) {
+      iziToast.error({
+        message: err?.response?.data?.message || "Ошибка при закрытии обращения",
+        position: "bottomCenter",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!supportRequestId || !userEmail) {
+      navigate("/error");
+      return;
+    }
+
+    // Загрузка сообщений
+    supportRequestApi.getMessages(String(supportRequestId), user.id as string)
+      .then((result: { data: WebSocketDto[] }) => {
+        setMessages(result.data || []);
         setLoading(false);
-        supportRequestApi.readMessages({
-          userId: requestUserId,
-          supportRequestId,
-          createdBefore: new Date(),
-        });
       })
-      .catch(err => {
+      .catch((err: any) => {
         setError(true);
         iziToast.error({
-          message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
-          position: 'bottomCenter',
+          message: typeof err.data.message === "string"
+            ? err.data.message
+            : err.data.message[0],
+          position: "bottomCenter",
         });
       });
   }, []);
 
   return (
     <>
-      <Container className="bg-white rounded shadow-sm p-2 mb-3">
+      <Container className="bg-white rounded shadow-sm p-3 mb-3">
         <Container>
-          <p className="fs-2 fw-semibold">Чат с пользователем</p>
-          <p className="text-muted">Пользователь: {queryParams.get('email')}</p>
-          {(user.role === 'manager' || user.role === 'admin') &&
-            <Button variant="danger" onClick={handleCloseRequest}>Закрыть</Button>
-          }
+          <h3 className="fs-5 fw-semibold">Чат с пользователем</h3>
+          <p className="text-muted">Пользователь: {userEmail}</p>
+          {(user.role === "manager" || user.role === "admin") && (
+            <Button variant="outline-danger" onClick={closeTicket}>
+              Закрыть обращение
+            </Button>
+          )}
         </Container>
       </Container>
+
       {loading ? (
         <LoaderMain />
+      ) : error ? (
+        <p className="text-center text-danger mt-3">Ошибка загрузки чата</p>
       ) : (
-        error ? (
-          <p className="text-center">Произошла ошибка при загрузке сообщений!</p>
-        ) : (
-          <>
-            <ChatMessages messages={messages} />
-            <ChatForm handleSendMessage={handleSendMessage}/>
-          </>
-        )
+        <>
+          <ChatMessages messages={messages} />
+          <ChatForm handleSendMessage={sendMessage} />
+        </>
       )}
     </>
-  )
+  );
 }
 
 export default ChatMain;

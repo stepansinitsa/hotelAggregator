@@ -7,32 +7,34 @@ import { LodgingAccomodationData } from "../../../types/types.d";
 import HotelRoomsItemImgs from "./AccommodationImages";
 
 function HotelRoomsItem({ room }: { room: LodgingAccomodationData }) {
-  const role = useAppSelector(state => state.user.role);
+  const role = useAppSelector((state) => state.user.role);
   const dispatch = useDispatch();
 
+  const handleSelectRoom = () => {
+    dispatch(setRoomsState({ currentRoom: room }));
+  };
+
   return (
-    <Container className="bg-white rounded shadow-sm p-2 mb-3">
-      <Container>
-        <Row className="mt-2">
-          <Col>
-            <HotelRoomsItemImgs images={room.images} />
-          </Col>
-          <Col>
-            <p className="fs-3 text-uppercase">{room.title}</p>
-            <p className="text-muted">{room.description}</p>
-            <Link to={'/reserve-room'} className="text-decoration-none m-1">
-              <Button onClick={() => dispatch(setRoomsState({ currentRoom: room }))}>Бронировать</Button>
+    <Container className="bg-white rounded shadow-sm p-3 mb-4">
+      <Row className="align-items-center">
+        <Col md={5}>
+          <HotelRoomsItemImgs images={room.images} />
+        </Col>
+        <Col md={7}>
+          <h4 className="text-uppercase">{room.title}</h4>
+          <p className="text-muted mb-3">{room.description}</p>
+          <Link to={'/reserve-room'} className="text-decoration-none me-2">
+            <Button onClick={handleSelectRoom}>Бронировать</Button>
+          </Link>
+          {role === 'admin' && (
+            <Link to={'/update-room'} className="text-decoration-none">
+              <Button variant="warning" onClick={handleSelectRoom}>Изменить</Button>
             </Link>
-            {role === 'admin' && 
-              <Link to={'/update-room'} className="text-decoration-none m-1">
-                <Button variant="warning" onClick={() => dispatch(setRoomsState({ currentRoom: room }))}>Изменить</Button>
-              </Link>
-            }
-          </Col>
-        </Row>
-      </Container>
+          )}
+        </Col>
+      </Row>
     </Container>
-  )
+  );
 }
 
-export default HotelRoomsItem
+export default HotelRoomsItem;

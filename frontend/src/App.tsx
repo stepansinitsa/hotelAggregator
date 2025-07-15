@@ -7,8 +7,8 @@ import {
 } from "react-router-dom";
 import useFetchData from "./api/api-client";
 import ChatMain from "./components/Ticket/TicketMain";
-import ErrorMain from "./components/Error/NotFoundPage";
-import HeaderMain from "./components/Header/AuthContainer";
+import ErrorMain from "./components/Error/ErrorMain";
+import HeaderMain from "./components/Header/HeaderMain";
 import HotelPageMain from "./components/Lodging/LodgingDetailsPage/LodgingDetailsPage";
 import HotelRoomUpdateMain from "./components/Lodging/AccommodationsUpdate/AccommodationEditPage";
 import HotelsAdd from "./components/Lodging/LodgingAdd/LodgingCreatePage";
@@ -22,7 +22,7 @@ import ReservationsMain from "./components/Bookings/BookingGrid";
 import SupportMain from "./components/Support/AssistanceTicketGrid";
 import UsersMain from "./components/Users/UserPage";
 import { getToken } from "./helpers/auth-storage.helpers";
-import { SocketClient } from "./socket/WebSocketClient";
+import SocketClient from "./socket/WebSocketClient";
 import { useAppDispatch } from "./store/store-hooks";
 import { login, logout } from "./store/user/userSlice";
 
@@ -44,7 +44,7 @@ function App() {
         const { email } = JSON.parse(jsonPayload);
         authUser.getInfo(email)
           .then(result => {
-            dispatch(login({ token, role: result.data.role, id: result.data.id }));
+            dispatch(login({ token, role: result.data.role, id: result.data.id, email: result.data.email }));
           })
           .catch(() => {
             dispatch(logout());

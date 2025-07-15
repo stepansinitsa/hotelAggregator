@@ -10,18 +10,18 @@ function ButtonLogout() {
 
   const handleLogout = () => {
     dispatch(logout());
-    iziToast.success({
-      message: 'Успешный выход из системы',
-      position: 'bottomCenter',
+    iziToast.info({
+      message: "Вы вышли из системы",
+      position: "bottomCenter",
     });
-    navigate('/');
-  }
+    navigate("/");
+  };
 
   return (
-    <Button variant="danger" onClick={handleLogout}>
+    <Button variant="outline-danger" onClick={handleLogout}>
       Выйти
     </Button>
-  )
+  );
 }
 
-export default ButtonLogout
+export default ButtonLogout;

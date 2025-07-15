@@ -21,7 +21,7 @@ import { UpdateAccommodationDto } from './dto/update-accommodation.dto';
 import { AccommodationsService } from './accommodations.service';
 import { Accommodation } from './schema/accommodation.schema';
 
-@Controller('api/accommodations')
+@Controller('accommodations')
 export class AccommodationsController {
   constructor(private accommodationsService: AccommodationsService) {}
 

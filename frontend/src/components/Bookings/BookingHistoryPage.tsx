@@ -9,72 +9,75 @@ import ReservationsTable from "./BookingTable";
 function ReservationsList() {
   const [error, setError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const [list, setList] = useState<any>([]);
-  const [reload, setReload] = useState<boolean>(false);
-  const userId = useAppSelector(state => state.user.id);
+  const [bookings, setBookings] = useState<any>([]);
+  const [refresh, setRefresh] = useState<boolean>(false);
+
+  const navigate = useNavigate();
+  const userId = useAppSelector((state) => state.user.id);
   const queryParams = new URLSearchParams(location.search);
   const { reservationsApi } = useFetchData();
-  const navigate = useNavigate();
 
-  const handleDeleteReservation = (reservationId: string) => {
+  const handleDelete = (bookingId: string) => {
     try {
-      reservationsApi.removeReservation(reservationId, userId)
-        .then(() => {          
+      reservationsApi.removeReservation(bookingId, userId)
+        .then(() => {
           iziToast.success({
-            message: 'Вы успешно удалили бронь',
-            position: 'bottomCenter',
+            message: "Бронь успешно удалена",
+            position: "bottomCenter",
           });
-          setReload(!reload);
+          setRefresh(!refresh);
         })
-        .catch(err => {
+        .catch((err) => {
           iziToast.error({
-            message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
-            position: 'bottomCenter',
+            message: err?.data?.message || "Ошибка при удалении брони",
+            position: "bottomCenter",
           });
         });
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
+      console.error("Ошибка при удалении брони:", e);
     }
-  }
+  };
 
   useEffect(() => {
-    setError(false);
-    setLoading(true);
-
-    if (!queryParams.get('id')) {
-      navigate('/error');
+    if (!queryParams.get("id")) {
+      navigate("/error");
       return;
     }
 
-    const id: any = queryParams.get('id');
+    const id: any = queryParams.get("id");
+
+    setLoading(true);
+    setError(false);
 
     reservationsApi.search({ userId: id })
-      .then(result => {  
-        setList(result.data);
+      .then((result) => {
+        setBookings(result.data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setError(true);
         iziToast.error({
-          message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
-          position: 'bottomCenter',
+          message: typeof err.data.message === "string"
+            ? err.data.message
+            : err.data.message[0],
+          position: "bottomCenter",
         });
       });
-  }, [reload]);
+  }, [refresh]);
 
   return (
     <>
       {loading ? (
         <LoaderMain />
+      ) : error ? (
+        <p className="text-center text-danger mt-3">Ошибка загрузки данных</p>
+      ) : bookings.length === 0 ? (
+        <p className="text-muted text-center mt-3">Нет активных бронирований</p>
       ) : (
-        error ? (
-          <p>Произошла ошибка при загрузке жилья!</p>
-        ) : (
-          <ReservationsTable list={list} handleDelete={handleDeleteReservation} />
-        )
+        <ReservationsTable list={bookings} handleDelete={handleDelete} />
       )}
     </>
-  )
+  );
 }
 
-export default ReservationsList
+export default ReservationsList;

@@ -4,18 +4,16 @@ import { useAppSelector } from "../../store/store-hooks";
 import ButtonLogout from "./LogoutButton";
 
 function HeaderProfile() {
-  const userId = useAppSelector(state => state.user.id);
+  const userId = useAppSelector((state) => state.user.id);
 
   return (
-    <div className="d-flex flex-column">
-      <Link to={`/reservations?id=${userId}`} className="mb-1 text-decoration-none">
-        <Button variant="primary" >
-          Мои бронирования
-        </Button>
+    <div className="d-flex flex-column gap-2">
+      <Link to={`/bookings?userId=${userId}`} className="text-decoration-none">
+        <Button variant="outline-primary">Мои бронирования</Button>
       </Link>
       <ButtonLogout />
     </div>
-  )
+  );
 }
 
 export default HeaderProfile;

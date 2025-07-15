@@ -1,19 +1,15 @@
 import { Container } from "react-bootstrap";
-import HotelsList from "../LodgingList/LodgingList";
 import HotelsSearchForm from "./LodgingSearchForm";
 
 function HotelsSearch() {
   return (
-    <>
-      <Container className="bg-white rounded shadow-sm p-2 mb-3">
-        <Container>
-          <p className="fs-2 fw-semibold">Поиск отеля</p>
-          <HotelsSearchForm />
-        </Container>
+    <Container className="bg-white rounded shadow-sm p-3 mb-4">
+      <Container>
+        <h3 className="fs-5 fw-semibold">Поиск по названию отеля</h3>
+        <HotelsSearchForm />
       </Container>
-      <HotelsList />
-    </>
-  )
+    </Container>
+  );
 }
 
-export default HotelsSearch
+export default HotelsSearch;

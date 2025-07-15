@@ -4,19 +4,15 @@ import SupportForm from "./AssistanceCreateForm";
 import SupportList from "./AssistanceList";
 
 function SupportMain() {
-  const user = useAppSelector(state => state.user);
+  const user = useAppSelector((state) => state.user);
 
   return (
-    <Container className="bg-white rounded shadow-sm p-2">
-      <Container>
-        <p className="fs-2 fw-semibold">Список обращений</p>
-        {user.role === 'client' &&
-          <SupportForm />
-        }
-      </Container>
+    <Container className="bg-white rounded shadow-sm p-3 mb-4">
+      <h3 className="fs-5 fw-semibold">Сообщения поддержки</h3>
+      {user.role === 'client' && <SupportForm />}
       <SupportList />
     </Container>
-  )
+  );
 }
 
-export default SupportMain
+export default SupportMain;

@@ -4,27 +4,29 @@ import { useAppDispatch } from "../../../store/store-hooks";
 import { setHotelsState } from "../../../store/lodgings/lodgingSlice";
 
 function HotelsSearchForm() {
-  const [title, setTitle] = useState<string>('');
+  const [title, setTitle] = useState<string>("");
   const dispatch = useAppDispatch();
 
-  const searchHandler = async (e: React.FormEvent<HTMLFormElement>) => {
-    try {
-      e.preventDefault();
-
-      dispatch(setHotelsState({ offset: 0, titleSearch: title }));
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    dispatch(setHotelsState({ offset: 0, titleSearch: title }));
+  };
 
   return (
-    <Form className="mb-3" onSubmit={searchHandler}>
-      <Form.Control type="text" className="mb-3" placeholder="Название отеля" onChange={(e) => setTitle(e.target.value)} />
-      <Button variant="primary" type="submit">
+    <Form onSubmit={handleSearch} className="mb-3">
+      <Form.Group className="mb-3">
+        <Form.Control
+          type="text"
+          placeholder="Введите текст для поиска..."
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </Form.Group>
+      <Button variant="outline-primary" type="submit">
         Поиск
       </Button>
     </Form>
-  )
+  );
 }
 
-export default HotelsSearchForm
+export default HotelsSearchForm;

@@ -1,6 +1,6 @@
 import iziToast from "izitoast";
 import { useSocket } from "../../hooks/useWebSocket";
-import { useSocketEvent } from "../../hooks/onSocketEvent";
+import { onSocketEvent } from "../../hooks/onSocketEvent";
 import { useSocketSubscribe } from "../../hooks/useWebSocketSubscription";
 import { WebSocketDto } from "../../types/types.d";
 import { useAppSelector } from "../../store/store-hooks";
@@ -17,8 +17,8 @@ function SocketHiddenDiv() {
       });
     }
   };
-  useSocketEvent('subscribeToChat', listener);
-  useSocketEvent('newMessage', listener);
+  onSocketEvent('subscribeToChat', listener);
+  onSocketEvent('newMessage', listener);
 
   return (
     <></>

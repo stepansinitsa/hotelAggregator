@@ -5,24 +5,21 @@ import { getToken } from '../helpers/auth-storage.helpers';
 export const useSocket = () => {
   useEffect(() => {
     const token = getToken();
-    socket.io.opts.extraHeaders = {
-      Authorization: token,
-    };
+
+    socket.auth = { token };
     socket.connect();
 
-    const listener = (event: StorageEvent) => {
-      if (event.key === 'token') {
-        socket.io.opts.extraHeaders = {
-          Authorization: event.newValue!,
-        };
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'token') {
+        socket.auth = { token: e.newValue };
       }
     };
 
-    window.addEventListener('storage', listener);
-      
-    return () => { 
-      socket.disconnect(); 
-      window.removeEventListener('storage', listener);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      socket.disconnect();
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 };

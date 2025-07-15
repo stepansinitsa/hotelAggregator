@@ -8,14 +8,14 @@ import UsersTable from "./UsersTable";
 
 function UsersList() {
   const [error, setError] = useState<boolean>(false);
-  const { usersApi } = useFetchData();
-  const usersState = useAppSelector(state => state.users);
+  const usersState = useAppSelector((state) => state.users);
   const dispatch = useAppDispatch();
+  const { usersApi } = useFetchData();
 
   useEffect(() => {
-    setError(false);
-
-    dispatch(setUsersState({ loading: true }));
+    if (!usersState.loading) {
+      dispatch(setUsersState({ loading: true }));
+    }
 
     usersApi.search({
       limit: usersState.limit,
@@ -24,35 +24,36 @@ function UsersList() {
       name: usersState.name,
       contactPhone: usersState.contactPhone,
     })
-      .then(result => {  
+      .then((result) => {
         if (result.data.length > 0) {
           dispatch(setUsersState({ list: result.data, loading: false }));
         } else {
           dispatch(setUsersState({ offset: 0, loading: false }));
         }
       })
-      .catch(err => {
+      .catch((err) => {
         setError(true);
         iziToast.error({
-          message: typeof err.data.message === 'string' ? err.data.message : err.data.message[0],
-          position: 'bottomCenter',
+          message: err?.response?.data?.message || "Ошибка при загрузке пользователей",
+          position: "bottomCenter",
         });
       });
-  }, [usersState.offset, usersState.email, usersState.name, usersState.contactPhone, usersState.render]);
+
+  }, [usersState.offset, usersState.email, usersState.name, usersState.contactPhone]);
 
   return (
     <>
       {usersState.loading ? (
         <LoaderMain />
+      ) : error ? (
+        <p className="text-center text-danger mt-3">Ошибка загрузки данных</p>
+      ) : !usersState.list.length ? (
+        <p className="text-center text-muted mt-3">Нет пользователей</p>
       ) : (
-        error ? (
-          <p>Произошла ошибка при загрузке списка пользователей!</p>
-        ) : (
-          <UsersTable list={usersState.list} />
-        )
+        <UsersTable list={usersState.list} />
       )}
     </>
-  )
+  );
 }
 
-export default UsersList
+export default UsersList;

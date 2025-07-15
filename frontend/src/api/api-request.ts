@@ -1,29 +1,25 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { getToken } from "../helpers/auth-storage.helpers";
 
-async function fetchData(url: string, opts: object, isFormData = false, callback?: () => void): Promise<AxiosResponse> { 
-  return new Promise((resolve, reject) => {
-    axios({
-      baseURL: `${import.meta.env.VITE_MAIN_URL}`,
-      url,
+async function fetchData(url: string, opts: any, isFormData = false): Promise<any> {
+  const token = getToken();
+
+  try {
+    const response = await axios({
+      url: `${import.meta.env.VITE_API_BASE_URL}/${url}`,
+      method: opts.method || "GET",
+      data: opts.data,
+      params: opts.params,
       headers: {
-        Authorization: 'Bearer ' + (getToken() || ''),
-        'Content-Type': isFormData === true ? 'multipart/form-data' : 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": isFormData ? "multipart/form-data" : "application/json",
       },
-      ...opts,
-    })
-      .then(result => {    
-        resolve(result);
-      })
-      .catch(error => {
-        if (axios.isAxiosError(error)) {
-          reject(error.response);
-        } else {
-          reject(error);
-        }
-      })
-      .finally(callback);
-  });
+    });
+
+    return Promise.resolve(response.data);
+  } catch (error: any) {
+    return Promise.reject(error.response?.data || error.message);
+  }
 }
 
 export default fetchData;
